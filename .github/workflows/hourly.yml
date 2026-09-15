@@ -8,19 +8,18 @@ on:
 jobs:
   fetch-and-publish:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: automation
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "22"
 
-      - run: npm install
-
-      - run: npm start
+      - name: Run automation pipeline
+        working-directory: automation
+        run: |
+          npm install
+          npm start
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
@@ -28,4 +27,20 @@ jobs:
           CARTESIA_API_KEY_2: ${{ secrets.CARTESIA_API_KEY_2 }}
           CARTESIA_API_KEY_3: ${{ secrets.CARTESIA_API_KEY_3 }}
           CARTESIA_BACKUP_API_KEY: ${{ secrets.CARTESIA_BACKUP_API_KEY }}
-          DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+
+      # The frontend is a static build queried from MongoDB at build time, so
+      # new articles don't appear until it's rebuilt. Redeploying every run
+      # (rather than only when new articles were added) keeps this simple —
+      # wrangler only re-uploads assets that actually changed, so a no-op
+      # hour is cheap.
+      - name: Build and deploy frontend to Cloudflare
+        working-directory: site
+        run: |
+          npm install
+          npm run build
+          npx wrangler deploy
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          PUBLIC_TTS_API_URL: https://digitaldramaback.netlify.app/api/tts
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -5,7 +5,7 @@ for "digital drama" relevance, rewrites each item with AI commentary/opinion,
 and publishes it — fully free-tier hosted.
 
 **Flow:** RSS sources → GitHub Actions (hourly cron) → filter → LLM rewrite →
-MongoDB Atlas → deploy hook → Astro static build → live site.
+MongoDB Atlas → Astro static build → `wrangler deploy` → live site.
 
 **Deployment is split across two hosts, in two separate repos:**
 - This repo (`site` + `automation`) → fully static, deployed on **Cloudflare Pages**.
@@ -63,15 +63,25 @@ it ships with two starter RSS feeds (Daily Dot, Kotaku) and a starter keyword
 list. Add/remove feeds and tune the keyword list to match your definition of
 "digital drama."
 
-### 5. Hosting the frontend (Cloudflare Pages)
+### 5. Hosting the frontend (Cloudflare Workers)
 
-1. Connect this repo, set the build root to `site`.
-2. Build command `npm run build`, output directory `dist`. No adapter needed —
-   the site is fully static (the TTS route lives in the separate backend repo).
-3. Add `MONGODB_URI` and `PUBLIC_TTS_API_URL` as environment variables (needed
-   at build time, since pages query Mongo in frontmatter; `PUBLIC_TTS_API_URL`
-   should point at the deployed TTS backend, step 5b).
-4. Create a deploy hook under the project's build/deploy settings, copy its URL.
+Deployed via `wrangler` (config in `site/wrangler.jsonc`), not a dashboard
+build pipeline — the site is fully static (no adapter; the TTS route lives in
+the separate backend repo), published as Workers static assets.
+
+1. `cd site && npx wrangler login` once, locally, to authenticate.
+2. Build with the right env vars, then deploy:
+   ```bash
+   PUBLIC_TTS_API_URL="https://<tts-backend-url>/api/tts" npm run build
+   npx wrangler deploy
+   ```
+   `MONGODB_URI` also needs to be set for the build step, since pages query
+   Mongo in frontmatter.
+3. For CI (the hourly workflow, step 6) to redeploy automatically, create a
+   scoped Cloudflare API token (My Profile → API Tokens → Create Token →
+   "Edit Cloudflare Workers" template, no IP restriction since GitHub-hosted
+   runners don't have a fixed IP) and add it as a `CLOUDFLARE_API_TOKEN`
+   secret, alongside `CLOUDFLARE_ACCOUNT_ID`.
 
 ### 5b. Hosting the TTS backend (Netlify)
 
@@ -87,14 +97,16 @@ Under Settings → Secrets and variables → Actions, add:
 - `LLM_API_KEY`
 - `CARTESIA_API_KEY`, `CARTESIA_API_KEY_2`, `CARTESIA_API_KEY_3`,
   `CARTESIA_BACKUP_API_KEY` (only used if `PREGENERATE_AUDIO=true`; idle by default)
-- `DEPLOY_HOOK_URL` (the Cloudflare Pages deploy hook from step 5)
+- `CLOUDFLARE_API_TOKEN` — a scoped token (the "Edit Cloudflare Workers" template)
+  used by `npx wrangler deploy` to publish the frontend after each run
+- `CLOUDFLARE_ACCOUNT_ID`
 
 ### 7. End-to-end test
 
 Manually run the workflow once (Actions tab → "Hourly drama fetch" →
 "Run workflow") and confirm: RSS fetch → filter → LLM → MongoDB write →
-deploy hook fire → site rebuild → new article visible on the live site. Then
-let the hourly schedule take over.
+frontend build → `wrangler deploy` → new article visible on the live site.
+Then let the hourly schedule take over.
 
 ## Notes
 
