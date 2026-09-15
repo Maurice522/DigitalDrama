@@ -32,9 +32,7 @@ MongoDB Atlas → deploy hook → Astro static build → live site.
 
 1. Create a free account at mongodb.com/atlas and build a free **M0 cluster**.
 2. Create a database user (separate from your Atlas login).
-3. Under Network Access, allow `0.0.0.0/0` (GitHub Actions and your host use
-   dynamic IPs).
-4. Copy the `mongodb+srv://...` connection string. The database (`digitalDrama`)
+3. Copy the `mongodb+srv://...` connection string. The database (`digitalDrama`)
    and `articles` collection are created automatically on first write.
 
 ### 2. LLM API key
