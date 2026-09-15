@@ -1,0 +1,43 @@
+{
+  "feeds": [
+    { "name": "The Daily Dot", "url": "https://www.dailydot.com/feed/" },
+    { "name": "Dexerto", "url": "https://www.dexerto.com/feed/" },
+    { "name": "Kotaku", "url": "https://kotaku.com/rss" },
+    { "name": "Polygon", "url": "https://www.polygon.com/rss/index.xml" },
+    { "name": "Rock Paper Shotgun", "url": "https://www.rockpapershotgun.com/feed" },
+    { "name": "The Verge", "url": "https://www.theverge.com/rss/index.xml" },
+    { "name": "TechCrunch", "url": "https://techcrunch.com/feed/" }
+  ],
+  "keywords": [
+    "leak",
+    "leaked",
+    "leaks",
+    "callout",
+    "cancelled",
+    "canceled",
+    "cancel culture",
+    "banned",
+    "ban wave",
+    "backlash",
+    "controversy",
+    "controversial",
+    "drama",
+    "feud",
+    "exposed",
+    "expose",
+    "data breach",
+    "hacked",
+    "scandal",
+    "boycott",
+    "apology video",
+    "deplatformed",
+    "suspended",
+    "doxx",
+    "doxxed",
+    "influencer war",
+    "twitter storm",
+    "x storm",
+    "viral backlash",
+    "receipts"
+  ]
+}

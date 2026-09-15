@@ -1,0 +1,88 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import StoryCard from "../../components/StoryCard.astro";
+import { getArticles } from "../../lib/mongodb";
+import { groupByTag, formatTag, hueIndexForTag } from "../../lib/tags";
+
+export async function getStaticPaths() {
+  const articles = await getArticles();
+  return groupByTag(articles).map((group) => ({
+    params: { tag: group.tag },
+    props: { articles: group.articles, tag: group.tag },
+  }));
+}
+
+const { articles, tag } = Astro.props;
+const hue = hueIndexForTag(tag);
+---
+
+<Layout
+  title={`${formatTag(tag)} News & Commentary — DigitalDrama`}
+  description={`${formatTag(tag)} news, drama, and live commentary — every DigitalDrama story tagged ${formatTag(tag)}, updated hourly.`}
+  keywords={["DigitalDrama", formatTag(tag), `${formatTag(tag)} news`, `${formatTag(tag)} drama`, "internet drama", "gaming drama"]}
+>
+  <section class="page-head" style={`--hue: var(--h${hue})`}>
+    <span class="eyebrow">Topic</span>
+    <h1>{formatTag(tag)}</h1>
+    <p>{articles.length} article{articles.length === 1 ? "" : "s"}</p>
+  </section>
+
+  <div class="grid">
+    {articles.map((article) => (
+      <StoryCard article={article} variant="standard" showSummary />
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .page-head {
+    padding: var(--sp-32) 0 var(--sp-24);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--sp-32);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hue);
+    background: color-mix(in srgb, var(--hue) 16%, var(--paper));
+    padding: 3px 9px;
+    border-radius: 3px;
+    margin-bottom: 0.6rem;
+  }
+
+  .page-head h1 {
+    font-size: 2.4rem;
+    margin: 0 0 0.2rem;
+    text-transform: capitalize;
+  }
+
+  .page-head p {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-32);
+    padding-bottom: var(--sp-64);
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

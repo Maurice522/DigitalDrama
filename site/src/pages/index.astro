@@ -1,0 +1,588 @@
+---
+import Layout from "../layouts/Layout.astro";
+import StoryCard from "../components/StoryCard.astro";
+import TopicModule from "../components/TopicModule.astro";
+import { getArticles } from "../lib/mongodb";
+import { groupByTag } from "../lib/tags";
+
+const articles = await getArticles();
+
+const lead = articles[0] ?? null;
+const secondary = articles.slice(1, Math.min(3, articles.length));
+const afterHero = articles.slice(Math.min(3, articles.length));
+// "Latest News" is a promise about recency, so it gets first claim on
+// whatever's freshest after the hero. "Top Headlines" (a vaguer label) gets
+// the leftovers — otherwise, once there are enough articles that these two
+// sections have to split what's left, the rail was eating the newer half
+// and the grid ended up labeled "Latest" while showing the oldest articles.
+const latestGrid = afterHero.slice(0, Math.min(6, Math.ceil(afterHero.length / 2)));
+// "Top Headlines" is meant to read as hot right now, not a dumping ground for
+// whatever's left over once "Latest News" takes its share — so it's capped
+// short (keeps the rail from dwarfing the hero card next to it) and anything
+// past a month old is excluded outright rather than padding the list out.
+const HOT_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+const now = Date.now();
+const headlinesRail = afterHero
+  .slice(latestGrid.length)
+  .filter((article) => now - new Date(article.publishedAt).getTime() <= HOT_WINDOW_MS)
+  .slice(0, 5);
+const recent = articles.slice(0, 5);
+
+const topics = groupByTag(articles)
+  .filter((g) => g.articles.length >= 2)
+  .slice(0, 6);
+
+const faqs = [
+  {
+    q: "What is DigitalDrama?",
+    a: "DigitalDrama is a live commentary site covering internet drama, gaming drama, influencer callouts, and tech scandals. It pulls from a wide net of gaming, tech, and internet-culture sources, rewrites each story, and adds a distinct take — refreshed hourly.",
+  },
+  {
+    q: "Is DigitalDrama's content written by AI?",
+    a: "Yes. Every summary and \"Our take\" section is AI-generated commentary on third-party reporting, not original reporting. We're upfront about that rather than passing it off as human journalism.",
+  },
+  {
+    q: "How often does DigitalDrama publish new stories?",
+    a: "New articles are added automatically, refreshed hourly, as relevant stories show up across the source feeds we track.",
+  },
+  {
+    q: "Where does DigitalDrama get its stories from?",
+    a: "From a set of gaming, tech, and internet-culture RSS feeds. Every article links back to the original reporting so you can read the full source yourself.",
+  },
+  {
+    q: "Is the \"Our take\" section DigitalDrama's final verdict on a story?",
+    a: "No — it's live commentary on a developing story, not a final verdict. Stories often keep evolving after we cover them, and our take is meant to be read that way.",
+  },
+  {
+    q: "Does DigitalDrama report on real people fairly?",
+    a: "We aim to. Disputed claims about real people are reported as alleged, not stated as fact, and every article links back to the source so you can check the original claim yourself.",
+  },
+  {
+    q: "Can I listen to an article instead of reading it?",
+    a: "Yes. Every article has a \"Listen\" button at the top of the story and another above \"Our take,\" so you can hear just the summary and opinion, or the whole thing.",
+  },
+  {
+    q: "Why do some articles show pixel art instead of a photo?",
+    a: "When a story's source doesn't provide its own image, DigitalDrama falls back to a small generated image, or a unique 7×7 pixel-art icon generated from that article's take, instead of a stock photo.",
+  },
+  {
+    q: "How is DigitalDrama organized by topic?",
+    a: "Every article is tagged (e.g. gaming drama, influencer drama, data breach), and each tag has its own page so you can follow one topic without scrolling the full archive.",
+  },
+  {
+    q: "Does DigitalDrama ever get things wrong?",
+    a: "It can — this is AI-rewritten commentary on fast-moving stories, not verified original reporting. That's exactly why every article links back to its source: treat DigitalDrama as a fast summary and a take, not the final word.",
+  },
+  {
+    q: "Is DigitalDrama free to read?",
+    a: "Yes, the entire site is free to read, with no paywall or login required.",
+  },
+  {
+    q: "Does DigitalDrama have a newsletter?",
+    a: "A newsletter signup is planned but not active yet — the form on the site today is a placeholder.",
+  },
+  {
+    q: "Is DigitalDrama affiliated with the sites or creators it covers?",
+    a: "No. DigitalDrama is an independent commentary site with no affiliation to the outlets, streamers, studios, or companies it writes about.",
+  },
+  {
+    q: "How do I search DigitalDrama for a specific topic or person?",
+    a: "Use the search icon in the top navigation to look up any article by title, or browse by topic from the Topics menu or a tag page.",
+  },
+];
+---
+
+<Layout
+  title="DigitalDrama — Internet Drama, Gaming Drama & Tech Scandal News"
+  description="DigitalDrama covers internet drama, gaming drama, influencer callouts, and tech scandals as they break — live commentary, refreshed hourly, always linked back to the source."
+>
+  {!lead && (
+    <p class="empty">No articles yet. Once the hourly automation runs, they'll show up here.</p>
+  )}
+
+  {lead && (
+    <section class="hero">
+      <div class="hero-row">
+        <StoryCard article={lead} variant="lead" showSummary />
+        {headlinesRail.length > 0 && (
+          <aside class="rail rail-headlines">
+            <h2 class="rail-title">Top Headlines</h2>
+            <div class="rail-list">
+              {headlinesRail.map((article) => (
+                <StoryCard article={article} variant="text" />
+              ))}
+            </div>
+          </aside>
+        )}
+      </div>
+
+      {secondary.length > 0 && (
+        <div class="hero-sub">
+          {secondary.map((article) => (
+            <StoryCard article={article} variant="standard" />
+          ))}
+        </div>
+      )}
+    </section>
+  )}
+
+  {lead && (
+    <section class="content-well">
+      <div class="latest">
+        <div class="section-head">
+          <h2>Latest News</h2>
+          <a class="see-more" href="/blog">See More →</a>
+        </div>
+        {latestGrid.length > 0 ? (
+          <div class="latest-grid">
+            {latestGrid.map((article) => (
+              <StoryCard article={article} variant="standard" />
+            ))}
+          </div>
+        ) : (
+          <p class="empty">Check back after the next automation run for more.</p>
+        )}
+      </div>
+
+      <aside class="rail">
+        <div class="rail-block">
+          <h3 class="rail-title">Most Recent</h3>
+          <ol class="ranked-list">
+            {recent.map((article) => (
+              <li>
+                <a href={`/blog/${article.slug}`}>{article.title}</a>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div class="rail-block newsletter">
+          <h3 class="rail-title">Get the drama in your inbox</h3>
+          <p>Hourly rewrites of the internet's messiest stories, no fluff.</p>
+          <form class="newsletter-form" onsubmit="return false">
+            <input type="email" placeholder="you@example.com" aria-label="Email address" disabled />
+            <button type="button" disabled>Subscribe</button>
+          </form>
+          <p class="newsletter-note">Signup isn't wired up yet — this is a placeholder.</p>
+        </div>
+      </aside>
+    </section>
+  )}
+
+  {topics.map((group) => (
+    <TopicModule tag={group.tag} articles={group.articles} />
+  ))}
+
+  <section class="seo-intro">
+    <h2>What Is DigitalDrama?</h2>
+    <p>
+      DigitalDrama is an internet drama and gaming drama news site that tracks the
+      web's messiest stories as they break — leaks, callouts, platform bans, data
+      breaches, and the influencer drama and streamer controversy stories that
+      dominate timelines for a day and then vanish. Instead of waiting for a slow
+      news cycle, DigitalDrama pulls from a wide net of gaming, tech, and
+      internet-culture sources, rewrites each story in plain language, and adds a
+      distinct take within the hour.
+    </p>
+
+    <h3>Why Internet Drama Moves Faster Than Traditional News</h3>
+    <p>
+      A YouTube drama story or Twitch drama callout can go from a single clip to a
+      full-blown cancel culture news cycle in a matter of hours. By the time a
+      traditional outlet publishes a full write-up, the discourse has often
+      already moved on. DigitalDrama exists to close that gap — surfacing gaming
+      leak news, platform ban news, and tech scandal coverage while it's still
+      actually happening, not after the conversation has cooled off.
+    </p>
+
+    <h3>What DigitalDrama Actually Covers</h3>
+    <p>The site casts a wide net across a few connected beats:</p>
+    <ul>
+      <li>
+        <strong>Gaming drama</strong> — cancelled titles, studio layoffs, union
+        disputes, and the gaming leak news that spreads across Discord and Reddit
+        before a publisher ever comments.
+      </li>
+      <li>
+        <strong>Influencer and streamer drama</strong> — Twitch drama, YouTube
+        drama, callout videos, apology videos, and the influencer feuds that play
+        out in real time across X and TikTok.
+      </li>
+      <li>
+        <strong>Tech scandal and data breach news</strong> — layoffs, executive
+        ousters, and the data breach stories that quietly affect far more people
+        than the headlines suggest.
+      </li>
+      <li>
+        <strong>Platform bans and content moderation</strong> — ban waves,
+        deplatforming decisions, and the backlash that follows almost every major
+        moderation call.
+      </li>
+    </ul>
+    <p>
+      Every one of these categories gets its own tag page, so if streamer
+      controversy is what you're here for, you can skip straight to it instead of
+      scrolling a general feed.
+    </p>
+
+    <h3>Commentary, Not Just a Copy-Paste</h3>
+    <p>
+      What separates DigitalDrama from a plain RSS aggregator is the "Our take"
+      section attached to every story. Rather than just restating what a source
+      reported, DigitalDrama adds a short, opinionated read on why a piece of
+      internet drama actually matters — sharper commentary than a wire report, but
+      clearly labeled as commentary rather than original reporting. Every article
+      links straight back to the original source, so nothing here is meant to
+      replace it — just to help you catch up faster and decide if it's worth
+      digging into the full story yourself.
+    </p>
+
+    <h3>Built to Move at Internet Speed</h3>
+    <p>
+      New DigitalDrama articles publish automatically, refreshed hourly, pulling
+      from gaming, tech, and internet-culture feeds continuously through the day.
+      That means the platform ban news, tech scandal, or gaming drama story
+      you're searching for is more likely to already be here — summarized,
+      tagged, and ready — rather than buried three scrolls deep on a publication
+      that only posts twice a day. If you're trying to figure out why a hashtag
+      is trending, why a streamer got banned, or what a leak actually revealed,
+      DigitalDrama is built to answer that in under two minutes, with links back
+      to the original source for anyone who wants the full picture.
+    </p>
+
+    <h3>Who DigitalDrama Is For</h3>
+    <p>
+      DigitalDrama is built for readers who want the internet drama news cycle
+      explained, not just linked. That includes gamers trying to figure out why a
+      studio suddenly went quiet, streamers and viewers tracking a Twitch drama
+      ban wave as it unfolds, and anyone who just wants a fast, tagged, searchable
+      record of the tech scandal and data breach stories that keep making
+      headlines. Every article is organized by topic, so past gaming leak news,
+      platform ban news, and cancel culture news stay easy to find long after
+      they've scrolled off the front page.
+    </p>
+  </section>
+
+  <section class="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-list">
+      {faqs.map((item) => (
+        <details class="faq-item">
+          <summary>{item.q}</summary>
+          <p>{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  })} />
+</Layout>
+
+<style>
+  .empty {
+    color: var(--ink-faint);
+    padding: 1.5rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+
+  .hero {
+    padding: var(--sp-32) 0;
+  }
+
+  .hero-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
+    gap: var(--sp-32);
+  }
+
+  .hero-sub {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-32);
+    margin-top: var(--sp-32);
+    padding-top: var(--sp-32);
+    border-top: 1px solid var(--line);
+  }
+
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-32);
+  }
+
+  .rail-headlines {
+    border-left: 1px solid var(--line);
+    padding-left: var(--sp-24);
+  }
+
+  .rail-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .rail-list :global(.story-text:last-child) {
+    border-bottom: none;
+  }
+
+  .content-well {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--sp-32);
+    padding: var(--sp-32) 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: var(--sp-24);
+  }
+
+  .section-head h2 {
+    font-size: 1.6rem;
+    margin: 0;
+  }
+
+  .see-more {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .see-more:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .latest-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-24);
+  }
+
+  .rail-block {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: var(--sp-24);
+  }
+
+  .ranked-list {
+    list-style: none;
+    counter-reset: rank;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .ranked-list li {
+    counter-increment: rank;
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+  }
+
+  .ranked-list li::before {
+    content: counter(rank);
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--ink-faint);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 1.2em;
+  }
+
+  .ranked-list a {
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 0.9rem;
+    line-height: 1.35;
+    font-weight: 600;
+  }
+
+  .ranked-list a:hover {
+    color: var(--accent);
+  }
+
+  .newsletter p {
+    font-size: 0.85rem;
+    margin: 0 0 0.9rem;
+  }
+
+  .newsletter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .newsletter-form input {
+    font: inherit;
+    font-size: 0.86rem;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .newsletter-form button {
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.86rem;
+    padding: 0.6rem 0.7rem;
+    border: none;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--paper);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .newsletter-note {
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin: 0.6rem 0 0;
+  }
+
+  @media (max-width: 900px) {
+    .hero-row,
+    .hero-sub,
+    .content-well {
+      grid-template-columns: 1fr;
+    }
+
+    .rail-headlines {
+      border-left: none;
+      padding-left: 0;
+      border-top: 1px solid var(--line);
+      padding-top: var(--sp-24);
+    }
+
+    .latest-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .seo-intro {
+    max-width: 72ch;
+    margin: 0 auto;
+    padding: var(--sp-48) 0 var(--sp-32);
+    border-top: 1px solid var(--line);
+  }
+
+  .seo-intro h2 {
+    font-size: 1.6rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .seo-intro h3 {
+    font-size: 1.15rem;
+    margin: var(--sp-24) 0 0.5rem;
+  }
+
+  .seo-intro p,
+  .seo-intro li {
+    font-size: 0.95rem;
+    max-width: none;
+  }
+
+  .seo-intro ul {
+    margin: 0 0 1em;
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .seo-intro li {
+    margin: 0;
+  }
+
+  .seo-intro strong {
+    color: var(--ink);
+  }
+
+  .faq {
+    max-width: 72ch;
+    margin: 0 auto;
+    padding: var(--sp-32) 0 var(--sp-48);
+  }
+
+  .faq h2 {
+    font-size: 1.6rem;
+    margin: 0 0 var(--sp-16);
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .faq-item {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+  }
+
+  .faq-item summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-item summary::after {
+    content: "+";
+    font-size: 1.2rem;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+  }
+
+  .faq-item[open] summary::after {
+    content: "−";
+  }
+
+  .faq-item summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .faq-item p {
+    font-size: 0.9rem;
+    max-width: none;
+    margin: 0.7rem 0 0;
+  }
+</style>

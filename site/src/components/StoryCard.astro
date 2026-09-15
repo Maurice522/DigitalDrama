@@ -1,0 +1,207 @@
+---
+import type { Article } from "../lib/mongodb";
+import { excerpt } from "../lib/text";
+import { formatRelative, formatAbsolute } from "../lib/time";
+import { hueIndexForTag, primaryTag, formatTag } from "../lib/tags";
+
+interface Props {
+  article: Article;
+  variant?: "lead" | "standard" | "compact" | "text";
+  showSummary?: boolean;
+}
+
+const { article, variant = "standard", showSummary = false } = Astro.props;
+const tag = primaryTag(article);
+const hue = tag ? hueIndexForTag(tag) : 0;
+const href = `/blog/${article.slug}`;
+const tagHref = tag ? `/tag/${tag}` : null;
+---
+
+<article class={`story story-${variant}`} style={`--hue: var(--h${hue})`}>
+  {variant !== "text" && article.image && (
+    <a class="thumb" href={href} tabindex="-1" aria-hidden="true">
+      <img src={article.image} alt="" loading="lazy" />
+    </a>
+  )}
+  <div class="body">
+    {tag && (
+      <a class="eyebrow" href={tagHref}>{formatTag(tag)}</a>
+    )}
+    <a class="headline" href={href}>
+      <h3>{article.title}</h3>
+    </a>
+    {showSummary && <p class="dek">{excerpt(article.summary, 160)}</p>}
+    <div class="meta">
+      <span class="source">{article.sourceName}</span>
+      <span class="dot">·</span>
+      <time datetime={article.publishedAt} title={formatAbsolute(article.publishedAt)}>
+        {formatRelative(article.publishedAt)}
+      </time>
+    </div>
+  </div>
+</article>
+
+<style>
+  .story {
+    --wash: color-mix(in srgb, var(--hue) 16%, var(--paper));
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .thumb {
+    display: block;
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    background: var(--mono-bg);
+    aspect-ratio: 16 / 10;
+  }
+
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+  }
+
+  .story:hover .thumb img {
+    transform: scale(1.035);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .eyebrow {
+    align-self: flex-start;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hue);
+    background: var(--wash);
+    padding: 2px 8px;
+    border-radius: 3px;
+    text-decoration: none;
+  }
+
+  .eyebrow:hover {
+    text-decoration: underline;
+  }
+
+  .headline {
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .headline h3 {
+    margin: 0;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .headline:hover h3 {
+    color: var(--hue);
+  }
+
+  .dek {
+    color: var(--ink-soft);
+    margin: 0.5rem 0 0;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 0.6rem;
+  }
+
+  .dot {
+    opacity: 0.6;
+  }
+
+  /* Lead: large image, big headline */
+  .story-lead .thumb {
+    margin-bottom: 0.9rem;
+    aspect-ratio: 16 / 9;
+  }
+
+  .story-lead .eyebrow {
+    margin-bottom: 0.5rem;
+  }
+
+  .story-lead .headline h3 {
+    font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+    line-height: 1.08;
+  }
+
+  .story-lead .dek {
+    font-size: 1rem;
+  }
+
+  /* Standard: medium image */
+  .story-standard .thumb {
+    margin-bottom: 0.75rem;
+  }
+
+  .story-standard .eyebrow {
+    margin-bottom: 0.45rem;
+  }
+
+  .story-standard .headline h3 {
+    font-size: 1.15rem;
+    line-height: 1.25;
+  }
+
+  /* Compact: row layout, small thumb left */
+  .story-compact {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .story-compact .thumb {
+    flex-shrink: 0;
+    width: 84px;
+    aspect-ratio: 1 / 1;
+  }
+
+  .story-compact .eyebrow {
+    display: none;
+  }
+
+  .story-compact .headline h3 {
+    font-size: 0.94rem;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  .story-compact .meta {
+    margin-top: 0.35rem;
+  }
+
+  /* Text-only row */
+  .story-text {
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .story-text .headline h3 {
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .story-text .meta {
+    margin-top: 0.3rem;
+  }
+</style>

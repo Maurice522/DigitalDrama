@@ -1,0 +1,75 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import StoryCard from "../../components/StoryCard.astro";
+import { getArticles } from "../../lib/mongodb";
+
+const articles = await getArticles();
+---
+
+<Layout
+  title="Full Archive — DigitalDrama"
+  description="Every internet drama, leak, and platform-chaos story DigitalDrama has covered, newest first."
+  keywords={["DigitalDrama", "internet drama archive", "gaming drama news", "influencer drama", "tech scandal news"]}
+>
+  <section class="page-head">
+    <h1>Archive</h1>
+    <p>{articles.length} article{articles.length === 1 ? "" : "s"}</p>
+  </section>
+
+  {articles.length === 0 && (
+    <p class="empty">No articles yet. Once the hourly automation runs, they'll show up here.</p>
+  )}
+
+  <div class="grid">
+    {articles.map((article) => (
+      <StoryCard article={article} variant="standard" showSummary />
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .page-head {
+    padding: var(--sp-32) 0 var(--sp-24);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--sp-32);
+  }
+
+  .page-head h1 {
+    font-size: 2.4rem;
+    margin: 0 0 0.2rem;
+  }
+
+  .page-head p {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  .empty {
+    color: var(--ink-faint);
+    padding: 1.5rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-32);
+    padding-bottom: var(--sp-64);
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,184 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const EFFECTIVE_DATE = "September 15, 2026";
+const CONTACT_EMAIL = "hello@digitaldrama.com";
+---
+
+<Layout
+  title="Privacy Policy — DigitalDrama"
+  description="How DigitalDrama collects, uses, and protects information when you use the site."
+  keywords={["DigitalDrama", "privacy policy", "digitaldrama privacy"]}
+>
+  <section class="page-head">
+    <span class="eyebrow">Legal</span>
+    <h1>Privacy Policy</h1>
+    <p>Effective {EFFECTIVE_DATE}</p>
+  </section>
+
+  <section class="prose">
+    <p>
+      This policy explains what information DigitalDrama ("we", "us") collects
+      when you visit digitaldrama.com (the "Site"), and how it's used. By using
+      the Site, you agree to the practices described here.
+    </p>
+
+    <h2>Information We Collect</h2>
+    <p>We don't require an account to read or listen to articles. The information we handle is limited to:</p>
+    <ul>
+      <li>
+        <strong>Local preferences.</strong> Your theme choice (light/dark) and
+        whether you've dismissed the announcement banner are stored in your
+        browser's local storage. This data never leaves your device and isn't
+        sent to us.
+      </li>
+      <li>
+        <strong>Standard server logs.</strong> Our hosting and content-delivery
+        providers automatically log basic technical data for every request —
+        things like IP address, browser type, and page requested — for
+        security and reliability purposes.
+      </li>
+      <li>
+        <strong>Voice playback requests.</strong> When you request audio
+        playback of an article, the article text is sent to our text-to-speech
+        provider to generate speech on demand. The resulting audio may be
+        cached so future requests for the same article don't need to
+        regenerate it.
+      </li>
+    </ul>
+
+    <h2>How We Use Information</h2>
+    <p>
+      We use the data above to operate, secure, and improve the Site — for
+      example, detecting abuse, diagnosing errors, and understanding overall
+      traffic patterns. We do not sell personal information, and we don't use
+      the data above to build advertising profiles.
+    </p>
+
+    <h2>Cookies & Local Storage</h2>
+    <p>
+      The Site uses browser local storage (not tracking cookies) to remember
+      your theme preference and banner dismissal. You can clear this at any
+      time through your browser's settings without affecting your ability to
+      use the Site.
+    </p>
+
+    <h2>Third-Party Services</h2>
+    <p>
+      The Site relies on a handful of third-party services to function:
+      hosting and content-delivery infrastructure, a database provider for
+      storing articles, a text-to-speech provider for on-demand audio, and
+      Google Fonts for typography. Each of these providers may process
+      standard technical/request data as part of delivering their service,
+      subject to their own privacy policies.
+    </p>
+
+    <h2>Third-Party Links</h2>
+    <p>
+      Every article links back to the original source it was based on. Those
+      sites are operated independently of DigitalDrama, and we aren't
+      responsible for their content or privacy practices. We encourage you to
+      review the privacy policy of any third-party site you visit.
+    </p>
+
+    <h2>Children's Privacy</h2>
+    <p>
+      The Site is not directed at children under 13, and we do not knowingly
+      collect personal information from children.
+    </p>
+
+    <h2>Data Retention</h2>
+    <p>
+      Server logs and cached audio are retained only as long as needed for the
+      operational purposes described above, after which they are deleted or
+      allowed to expire in the ordinary course of business.
+    </p>
+
+    <h2>Changes to This Policy</h2>
+    <p>
+      We may update this policy from time to time. Material changes will be
+      reflected by updating the effective date above.
+    </p>
+
+    <h2>Contact Us</h2>
+    <p>
+      Questions about this policy can be sent to{" "}
+      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or via our
+      <a href="/contact">Contact page</a>.
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .page-head {
+    padding: var(--sp-32) 0 var(--sp-24);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--sp-32);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--note);
+    background: var(--note-wash);
+    padding: 3px 9px;
+    border-radius: 3px;
+    margin-bottom: 0.6rem;
+  }
+
+  .page-head h1 {
+    font-size: 2.4rem;
+    margin: 0 0 0.2rem;
+  }
+
+  .page-head p {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  .prose {
+    max-width: 72ch;
+    padding-bottom: var(--sp-64);
+  }
+
+  .prose h2 {
+    font-size: 1.3rem;
+    margin: var(--sp-32) 0 0.6rem;
+  }
+
+  .prose h2:first-of-type {
+    margin-top: var(--sp-24);
+  }
+
+  .prose p,
+  .prose li {
+    font-size: 0.92rem;
+    max-width: none;
+  }
+
+  .prose ul {
+    margin: 0 0 1em;
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .prose li {
+    margin: 0;
+  }
+
+  .prose strong {
+    color: var(--ink);
+  }
+
+  .prose a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+</style>

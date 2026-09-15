@@ -1,0 +1,19 @@
+{
+  "name": "automation",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "backfill-images": "node src/backfillImages.js",
+    "backfill-audio": "node src/backfillAudio.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.10.0",
+    "rss-parser": "^3.13.0"
+  }
+}

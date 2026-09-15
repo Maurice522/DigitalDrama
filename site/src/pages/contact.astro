@@ -1,0 +1,127 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const CONTACT_EMAIL = "hello@digitaldrama.com";
+---
+
+<Layout
+  title="Contact Us — DigitalDrama"
+  description="Get in touch with DigitalDrama — general inquiries, corrections, and takedown requests."
+  keywords={["DigitalDrama", "contact digitaldrama", "corrections request", "takedown request"]}
+>
+  <section class="page-head">
+    <span class="eyebrow">Contact</span>
+    <h1>Contact Us</h1>
+    <p>Questions, corrections, or press inquiries — we read everything.</p>
+  </section>
+
+  <section class="prose">
+    <div class="contact-card">
+      <h2>Email Us</h2>
+      <p>
+        The fastest way to reach us is email. We aim to respond within a few
+        business days.
+      </p>
+      <a class="email-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+    </div>
+
+    <h2>Corrections & Takedown Requests</h2>
+    <p>
+      Every DigitalDrama article is AI-generated commentary on reporting that
+      first appeared elsewhere, and every article links back to that original
+      source. If we've misstated something, misattributed a claim, or you're
+      the subject of a story and want to flag an inaccuracy, email us with the
+      article link and a short description of the issue — we review these
+      directly and correct or remove content when warranted.
+    </p>
+
+    <h2>General Inquiries & Press</h2>
+    <p>
+      For anything else — partnership questions, press inquiries, or general
+      feedback about the site — reach out at the address above. For more on
+      how the site works, see our <a href="/about">About</a> page, and for
+      how we handle data and content, see our
+      <a href="/privacy-policy">Privacy Policy</a> and
+      <a href="/terms-and-conditions">Terms & Conditions</a>.
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .page-head {
+    padding: var(--sp-32) 0 var(--sp-24);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--sp-32);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-wash);
+    padding: 3px 9px;
+    border-radius: 3px;
+    margin-bottom: 0.6rem;
+  }
+
+  .page-head h1 {
+    font-size: 2.4rem;
+    margin: 0 0 0.2rem;
+  }
+
+  .page-head p {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  .prose {
+    max-width: 72ch;
+    padding-bottom: var(--sp-64);
+  }
+
+  .prose h2 {
+    font-size: 1.5rem;
+    margin: var(--sp-32) 0 0.6rem;
+  }
+
+  .prose p {
+    font-size: 0.95rem;
+    max-width: none;
+  }
+
+  .prose a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .contact-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: var(--sp-24);
+    margin-bottom: var(--sp-24);
+  }
+
+  .contact-card h2 {
+    margin-top: 0;
+  }
+
+  .email-link {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--accent) !important;
+    text-decoration: none !important;
+    margin-top: 0.4rem;
+  }
+
+  .email-link:hover {
+    text-decoration: underline !important;
+  }
+</style>

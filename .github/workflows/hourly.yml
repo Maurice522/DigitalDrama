@@ -1,0 +1,31 @@
+name: Hourly drama fetch
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  fetch-and-publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automation
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      - run: npm start
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          CARTESIA_API_KEY: ${{ secrets.CARTESIA_API_KEY }}
+          CARTESIA_API_KEY_2: ${{ secrets.CARTESIA_API_KEY_2 }}
+          CARTESIA_API_KEY_3: ${{ secrets.CARTESIA_API_KEY_3 }}
+          CARTESIA_BACKUP_API_KEY: ${{ secrets.CARTESIA_BACKUP_API_KEY }}
+          DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}

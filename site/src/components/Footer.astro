@@ -1,0 +1,168 @@
+---
+import { getArticles } from "../lib/mongodb";
+import { allTags, formatTag } from "../lib/tags";
+
+const articles = await getArticles();
+const tags = allTags(articles).slice(0, 14);
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-cols">
+    <div class="col">
+      <h4>About</h4>
+      <p>
+        Digital Drama posts live commentary on internet drama, leaks, and
+        platform chaos as it happens — not final verdicts. Stories are
+        summarized and reacted to within the hour, as they break.
+      </p>
+    </div>
+    <div class="col">
+      <h4>Legal</h4>
+      <p>
+        We didn't break these stories — every article links back to the
+        original reporting so you can check it yourself. Disputed claims
+        about real people are reported as alleged, not stated as fact.
+      </p>
+    </div>
+    <div class="col">
+      <h4>Trending topics</h4>
+      <ul class="tag-list">
+        {tags.map((tag) => (
+          <li><a href={`/tag/${tag}`}>{formatTag(tag)}</a></li>
+        ))}
+      </ul>
+    </div>
+    <div class="col brand-col">
+      <a class="brand" href="/">Digital<span>Drama</span></a>
+      <p>Live commentary, refreshed hourly.</p>
+    </div>
+  </div>
+  <nav class="footer-links">
+    <a href="/about">About Us</a>
+    <a href="/contact">Contact Us</a>
+    <a href="/privacy-policy">Privacy Policy</a>
+    <a href="/terms-and-conditions">Terms &amp; Conditions</a>
+  </nav>
+
+  <div class="legal-line">© {year} Digital Drama. All articles are AI-generated live commentary on third-party reporting, not original reporting or a final take.</div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--line);
+    margin-top: 4rem;
+    padding: var(--sp-48) var(--sp-32) var(--sp-32);
+  }
+
+  .footer-cols {
+    max-width: var(--container);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) 1.2fr;
+    gap: var(--sp-32);
+  }
+
+  .col h4 {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    margin: 0 0 0.75rem;
+  }
+
+  .col p {
+    font-size: 0.86rem;
+    max-width: 32ch;
+  }
+
+  .tag-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag-list a {
+    display: inline-block;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+    background: var(--mono-bg);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    text-transform: capitalize;
+  }
+
+  .tag-list a:hover {
+    color: var(--ink);
+  }
+
+  .brand-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .brand {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+
+  .brand span {
+    color: var(--accent);
+  }
+
+  .footer-links {
+    max-width: var(--container);
+    margin: var(--sp-32) auto 0;
+    padding-top: var(--sp-24);
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+  }
+
+  .footer-links a {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+
+  .footer-links a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .legal-line {
+    max-width: var(--container);
+    margin: var(--sp-16) auto 0;
+    font-size: 0.76rem;
+    color: var(--ink-faint);
+  }
+
+  @media (max-width: 900px) {
+    .footer-cols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .footer-cols {
+      grid-template-columns: 1fr;
+    }
+
+    .site-footer {
+      padding: var(--sp-32) var(--sp-16) var(--sp-24);
+    }
+  }
+</style>

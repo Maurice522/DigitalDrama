@@ -1,0 +1,460 @@
+---
+import { getArticles } from "../lib/mongodb";
+import { allTags, formatTag } from "../lib/tags";
+
+const articles = await getArticles();
+const tags = allTags(articles).slice(0, 12);
+const searchIndex = articles.map((a) => ({ title: a.title, slug: a.slug }));
+---
+
+<div class="promo" id="promo">
+  <p>Live coverage, refreshed hourly — new drama arrives while you sleep.</p>
+  <button id="promo-close" type="button" aria-label="Dismiss announcement">✕</button>
+</div>
+
+<header class="site-header" id="site-header">
+  <div class="header-row">
+    <a class="brand" href="/">Digital<span>Drama</span></a>
+
+    <nav class="primary-nav">
+      <a href="/blog">Archive</a>
+      <div class="dropdown topics-dropdown">
+        <button id="topics-toggle" type="button" aria-expanded="false" aria-controls="topics-panel">
+          Topics
+        </button>
+        <div class="dropdown-panel" id="topics-panel" hidden>
+          {tags.map((tag) => (
+            <a href={`/tag/${tag}`}>{formatTag(tag)}</a>
+          ))}
+        </div>
+      </div>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <div class="dropdown search">
+        <button id="search-toggle" type="button" aria-expanded="false" aria-controls="search-panel" aria-label="Search articles">
+          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6.5"/><line x1="18" y1="18" x2="13.8" y2="13.8"/></svg>
+        </button>
+        <div class="dropdown-panel search-panel" id="search-panel" hidden>
+          <input id="search-input" type="text" placeholder="Search articles…" aria-label="Search articles" autocomplete="off" />
+          <div id="search-results" class="search-results"></div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+        <span class="icon-sun">☀</span>
+        <span class="icon-moon">☾</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script type="application/json" id="search-index-data" set:html={JSON.stringify(searchIndex)} />
+
+<script is:inline>
+  (function () {
+    var promo = document.getElementById("promo");
+    if (promo && localStorage.getItem("promo-dismissed") === "1") {
+      promo.style.display = "none";
+    }
+    document.getElementById("promo-close")?.addEventListener("click", function () {
+      if (!promo) return;
+      promo.style.height = promo.offsetHeight + "px";
+      requestAnimationFrame(function () {
+        promo.style.height = "0px";
+        promo.style.opacity = "0";
+      });
+      localStorage.setItem("promo-dismissed", "1");
+      setTimeout(function () {
+        promo.style.display = "none";
+      }, 220);
+    });
+
+    var header = document.getElementById("site-header");
+    function onScroll() {
+      if (!header) return;
+      header.classList.toggle("is-compact", window.scrollY > 80);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    function setupDropdown(toggleId, panelId) {
+      var toggle = document.getElementById(toggleId);
+      var panel = document.getElementById(panelId);
+      if (!toggle || !panel) return;
+      function close() {
+        panel.hidden = true;
+        toggle.setAttribute("aria-expanded", "false");
+      }
+      function open() {
+        panel.hidden = false;
+        toggle.setAttribute("aria-expanded", "true");
+      }
+      toggle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (panel.hidden) open();
+        else close();
+      });
+      panel.addEventListener("click", function (e) {
+        e.stopPropagation();
+      });
+      document.addEventListener("click", close);
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") close();
+      });
+      return { open: open, close: close };
+    }
+
+    setupDropdown("topics-toggle", "topics-panel");
+    var searchCtl = setupDropdown("search-toggle", "search-panel");
+
+    var input = document.getElementById("search-input");
+    var results = document.getElementById("search-results");
+    var indexEl = document.getElementById("search-index-data");
+    var index = [];
+    try {
+      index = JSON.parse(indexEl ? indexEl.textContent : "[]");
+    } catch (err) {
+      index = [];
+    }
+
+    document.getElementById("search-toggle")?.addEventListener("click", function () {
+      setTimeout(function () {
+        input?.focus();
+      }, 0);
+    });
+
+    input?.addEventListener("input", function () {
+      var q = input.value.trim().toLowerCase();
+      if (!results) return;
+      if (!q) {
+        results.innerHTML = "";
+        return;
+      }
+      var matches = index
+        .filter(function (item) {
+          return item.title.toLowerCase().includes(q);
+        })
+        .slice(0, 8);
+      if (matches.length === 0) {
+        results.innerHTML = '<p class="no-results">No matches</p>';
+        return;
+      }
+      results.innerHTML = matches
+        .map(function (item) {
+          return '<a href="/blog/' + item.slug + '">' + item.title + "</a>";
+        })
+        .join("");
+    });
+
+    var themeToggle = document.getElementById("theme-toggle");
+    themeToggle?.addEventListener("click", function () {
+      var root = document.documentElement;
+      var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    });
+  })();
+</script>
+
+<style>
+  .promo {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.76rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    overflow: hidden;
+    transition: height 0.2s ease, opacity 0.2s ease;
+  }
+
+  .promo p {
+    margin: 0;
+    color: var(--paper);
+    max-width: none;
+  }
+
+  .promo button {
+    background: none;
+    border: none;
+    color: var(--paper);
+    opacity: 0.7;
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 2px;
+  }
+
+  .promo button:hover {
+    opacity: 1;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .header-row {
+    max-width: var(--container);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.9rem var(--sp-32);
+    transition: padding 0.2s ease;
+  }
+
+  .site-header.is-compact .header-row {
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+  }
+
+  .brand {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+
+  .brand span {
+    color: var(--accent);
+  }
+
+  .primary-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex: 1;
+  }
+
+  .primary-nav > a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.4rem 0.7rem;
+    border-radius: 3px;
+  }
+
+  .primary-nav > a:hover {
+    color: var(--ink);
+    background: var(--mono-bg);
+  }
+
+  .dropdown {
+    position: relative;
+  }
+
+  .dropdown > button {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0.4rem 0.7rem;
+    border-radius: 3px;
+  }
+
+  .dropdown > button:hover {
+    color: var(--ink);
+    background: var(--mono-bg);
+  }
+
+  .dropdown-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 30;
+  }
+
+  .dropdown-panel a {
+    text-decoration: none;
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    text-transform: capitalize;
+  }
+
+  .dropdown-panel a:hover {
+    background: var(--accent-wash);
+    color: var(--ink);
+  }
+
+  .dropdown-panel[hidden] {
+    display: none;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .search .dropdown-panel,
+  .search-panel {
+    right: 0;
+    left: auto;
+    min-width: 340px;
+    max-width: min(400px, calc(100vw - 2rem));
+    padding: 0.7rem;
+  }
+
+  .search-panel input {
+    width: 100%;
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .search-panel input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .search-results {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.4rem;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  /*
+    These results are injected client-side via innerHTML (see the script
+    below), so they never receive Astro's scoped-style attribute — plain
+    `.search-results a` rules silently never match them. :global() is
+    required here, not just a style preference.
+  */
+  :global(.search-results a) {
+    display: block;
+    text-decoration: none;
+    color: var(--ink-soft);
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 0.6rem 0.5rem;
+    line-height: 1.4;
+    border-bottom: 1px solid var(--line);
+  }
+
+  :global(.search-results a:last-child) {
+    border-bottom: none;
+  }
+
+  :global(.search-results a:hover) {
+    background: var(--accent-wash);
+    color: var(--ink);
+  }
+
+  :global(.search-results .no-results) {
+    color: var(--ink-faint);
+    font-size: 0.82rem;
+    padding: 0.4rem;
+    margin: 0;
+  }
+
+  .header-actions > button[aria-label="Search articles"] {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  .header-actions > button[aria-label="Search articles"]:hover {
+    color: var(--ink);
+    background: var(--mono-bg);
+  }
+
+  .theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+
+  .theme-toggle:hover {
+    color: var(--ink);
+    border-color: var(--ink-faint);
+  }
+
+  .theme-toggle .icon-moon {
+    display: none;
+  }
+
+  :root[data-theme="dark"] .theme-toggle .icon-sun {
+    display: none;
+  }
+
+  :root[data-theme="dark"] .theme-toggle .icon-moon {
+    display: inline;
+  }
+
+  @media (max-width: 600px) {
+    .header-row {
+      padding-left: var(--sp-16);
+      padding-right: var(--sp-16);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .topics-dropdown {
+      display: none;
+    }
+
+    .dropdown-panel {
+      position: fixed;
+      left: 1rem;
+      right: 1rem;
+      width: auto;
+    }
+
+    .search-panel {
+      right: 1rem;
+    }
+  }
+</style>
