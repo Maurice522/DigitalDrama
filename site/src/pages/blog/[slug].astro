@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import StoryCard from "../../components/StoryCard.astro";
-import { getArticles, getArticleAudio } from "../../lib/mongodb";
+import { getArticles } from "../../lib/mongodb";
 import { toParagraphs, renderInlineMarkdown, excerpt } from "../../lib/text";
 import { formatRelative, formatAbsolute } from "../../lib/time";
 import { hueIndexForTag, primaryTag, formatTag } from "../../lib/tags";
@@ -17,16 +17,15 @@ export async function getStaticPaths() {
       const fallback = related.length >= 3
         ? related
         : [...related, ...articles.filter((a) => a.slug !== article.slug && !related.includes(a))].slice(0, 4);
-      const audio = await getArticleAudio(article.slug);
       return {
         params: { slug: article.slug },
-        props: { article, related: fallback, audio },
+        props: { article, related: fallback },
       };
     }),
   );
 }
 
-const { article, related, audio } = Astro.props;
+const { article, related } = Astro.props;
 const tag = primaryTag(article);
 const hue = tag ? hueIndexForTag(tag) : 0;
 const shareText = encodeURIComponent(article.title);
@@ -146,8 +145,6 @@ const articleKeywords = [
         id="tts-data"
         set:html={JSON.stringify({
           slug: article.slug,
-          summaryAudio: audio.summary,
-          opinionAudio: audio.opinion,
           apiUrl: import.meta.env.PUBLIC_TTS_API_URL ?? "/api/tts",
         })}
       />
@@ -354,21 +351,20 @@ const articleKeywords = [
 
   (function () {
     var dataEl = document.getElementById("tts-data");
-    var ttsData = { slug: "", summaryAudio: null, opinionAudio: null };
+    var ttsData = { slug: "", apiUrl: "/api/tts" };
     try {
       ttsData = JSON.parse(dataEl ? dataEl.textContent : "{}");
     } catch (err) {
-      ttsData = { slug: "", summaryAudio: null, opinionAudio: null };
+      ttsData = { slug: "", apiUrl: "/api/tts" };
     }
 
-    // One entry per section (not per paragraph) — audio is generated and
-    // cached once per section in MongoDB, so a section is either played
-    // straight from its precomputed clip or fetched once and cached for
-    // every future visitor after that.
+    // One entry per section (not per paragraph) — the backend checks its own
+    // MongoDB cache first and only generates fresh audio on a genuine miss,
+    // so every request here is cheap after the first listener for a section.
     function buildQueue(mode) {
       var sections = mode === "all" ? ["summary", "opinion"] : ["opinion"];
       return sections.map(function (section) {
-        return { section: section, cached: ttsData[section + "Audio"] };
+        return { section: section };
       });
     }
 
@@ -458,10 +454,6 @@ const articleKeywords = [
         return;
       }
       var item = queue[index];
-      if (item.cached) {
-        playSrc(btn, item.cached, false);
-        return;
-      }
       setState("loading");
       var contentType = "audio/mpeg";
       fetch(ttsData.apiUrl, {
