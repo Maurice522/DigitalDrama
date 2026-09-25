@@ -27,7 +27,11 @@ interface Props {
   description?: string;
   keywords?: string[];
   image?: string;
+  imageAlt?: string;
   type?: "website" | "article";
+  publishedTime?: string;
+  modifiedTime?: string;
+  articleTags?: string[];
 }
 
 const {
@@ -35,7 +39,11 @@ const {
   description = "Live commentary on internet drama, leaks, and platform chaos.",
   keywords = DEFAULT_KEYWORDS,
   image = "/og-image.png",
+  imageAlt = "DigitalDramaa — internet drama, gaming drama, and tech scandal news",
   type = "website",
+  publishedTime,
+  modifiedTime,
+  articleTags,
 } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.url.origin).toString();
@@ -61,14 +69,26 @@ const ogImageUrl = new URL(image, Astro.url.origin).toString();
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:alt" content={imageAlt} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:locale" content="en_US" />
+    {type === "article" && publishedTime && (
+      <meta property="article:published_time" content={publishedTime} />
+    )}
+    {type === "article" && (modifiedTime ?? publishedTime) && (
+      <meta property="article:modified_time" content={modifiedTime ?? publishedTime} />
+    )}
+    {type === "article" && articleTags?.map((tag) => (
+      <meta property="article:tag" content={tag} />
+    ))}
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={imageAlt} />
 
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
@@ -254,6 +274,18 @@ const ogImageUrl = new URL(image, Astro.url.origin).toString();
   .skip-link:focus {
     left: 1rem;
     top: 1rem;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   main {
