@@ -1,6 +1,6 @@
 const GEMINI_MODEL = "gemini-2.5-flash";
 
-const SYSTEM_PROMPT = `You write for "Digital Drama," a blog that covers internet drama, leaks, callouts, and platform chaos.
+const SYSTEM_PROMPT = `You write for "Digital Dramaa," a blog that covers internet drama, leaks, callouts, and platform chaos.
 Given a news item, respond with ONLY a JSON object with these fields:
 - "summary": 3-4 paragraphs (separate paragraphs with a blank line), in your own words, telling the full story — what happened, who's involved, the timeline, and any reactions or context so far. Do not closely mirror the source's phrasing.
 - "opinion": 2-3 paragraphs of genuine, distinct commentary/opinion on the story — sharp and a little irreverent, but fair. Do not state unverified claims about real people as fact; frame disputed claims as reported/alleged.

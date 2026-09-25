@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://digitaldrama.com/sitemap.xml
+Sitemap: https://digitaldramaa.com/sitemap.xml

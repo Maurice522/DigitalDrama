@@ -14,11 +14,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            automation/package-lock.json
+            site/package-lock.json
 
       - name: Run automation pipeline
         working-directory: automation
         run: |
-          npm install
+          npm ci
           npm start
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
@@ -36,7 +40,7 @@ jobs:
       - name: Build and deploy frontend to Cloudflare
         working-directory: site
         run: |
-          npm install
+          npm ci
           npm run build
           npx wrangler deploy
         env:

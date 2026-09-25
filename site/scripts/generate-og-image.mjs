@@ -22,7 +22,7 @@ const svg = `
   <rect width="${WIDTH}" height="${HEIGHT}" fill="#f6f4ef" />
   <rect x="0" y="0" width="${WIDTH}" height="10" fill="#0e8f5b" />
   <text x="80" y="300" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="108" letter-spacing="-2">
-    <tspan fill="#16181b">DIGITAL</tspan><tspan fill="#0e8f5b">DRAMA</tspan>
+    <tspan fill="#16181b">DIGITAL</tspan><tspan fill="#0e8f5b">DRAMAA</tspan>
   </text>
   <text x="82" y="360" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="30" fill="#5b6169">
     Live commentary on internet drama, leaks, and platform chaos

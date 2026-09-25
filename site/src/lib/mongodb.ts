@@ -35,19 +35,30 @@ async function getDb(): Promise<Db> {
   return db;
 }
 
+// Layout, Header, and Footer each call getArticles() independently on every
+// page, and this is a fully static build (output: "static") re-run per page
+// — without caching, that's a full collection scan per page instead of one
+// for the whole build.
+let articlesPromise: Promise<Article[]> | null = null;
+
 export async function getArticles(): Promise<Article[]> {
-  try {
-    const database = await getDb();
-    const articles = await database
-      .collection<Article>("articles")
-      .find({})
-      .sort({ publishedAt: -1 })
-      .toArray();
-    return JSON.parse(JSON.stringify(articles));
-  } catch (err) {
-    console.warn(`[mongodb] Skipping articles, could not connect: ${(err as Error).message}`);
-    return [];
-  }
+  if (articlesPromise) return articlesPromise;
+  articlesPromise = (async () => {
+    try {
+      const database = await getDb();
+      const articles = await database
+        .collection<Article>("articles")
+        .find({})
+        .sort({ publishedAt: -1 })
+        .toArray();
+      return JSON.parse(JSON.stringify(articles));
+    } catch (err) {
+      console.warn(`[mongodb] Skipping articles, could not connect: ${(err as Error).message}`);
+      articlesPromise = null;
+      return [];
+    }
+  })();
+  return articlesPromise;
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {

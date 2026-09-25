@@ -23,7 +23,7 @@ function renderUrl({ loc, lastmod, changefreq, priority }: SitemapUrl): string {
 }
 
 export async function GET({ site }: APIContext) {
-  const siteUrl = (site?.toString() ?? "https://digitaldrama.com").replace(/\/$/, "");
+  const siteUrl = (site?.toString() ?? "https://digitaldramaa.com").replace(/\/$/, "");
   const articles = await getArticles();
   const tags = allTags(articles);
 
