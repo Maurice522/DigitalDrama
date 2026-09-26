@@ -2,7 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import StoryCard from "../../components/StoryCard.astro";
 import { getArticles } from "../../lib/mongodb";
-import { toParagraphs, renderInlineMarkdown, excerpt } from "../../lib/text";
+import { excerpt } from "../../lib/text";
 import { formatRelative, formatAbsolute } from "../../lib/time";
 import { hueIndexForTag, primaryTag, formatTag } from "../../lib/tags";
 
@@ -32,10 +32,6 @@ const canonicalArticleUrl = new URL(`/blog/${article.slug}`, Astro.site).toStrin
 const shareText = encodeURIComponent(article.title);
 const shareUrl = encodeURIComponent(canonicalArticleUrl);
 
-const showPixelAsHero = !article.image && Boolean(article.pixelArt);
-const showPixelSticker = Boolean(article.image) && Boolean(article.pixelArt);
-const heroVisual = article.image ?? (showPixelAsHero ? article.pixelArt : null);
-
 // Article-specific keywords lead with the site's tags for this story, with
 // the shared brand/supporting terms folded in after so the page still
 // carries the site-wide SEO baseline.
@@ -56,34 +52,36 @@ const articleKeywords = [
   type="article"
   publishedTime={article.publishedAt}
   articleTags={article.tags}
+  noindex
 >
   <article class="post" style={`--hue: var(--h${hue})`}>
-    <div class={`art-hero ${heroVisual ? "" : "no-image"}`}>
-      {heroVisual && (
-        <div class="hero-image">
-          <img src={heroVisual} alt="" class={showPixelAsHero ? "pixel-hero" : ""} />
-          {showPixelSticker && (
-            <img class="pixel-sticker" src={article.pixelArt} alt="Pixel art rendition of this story" />
-          )}
+    {article.image && (
+      <div class="ticker-hero">
+        <img src={article.image} alt="" />
+      </div>
+    )}
+    <div class="ticker-panel">
+      <div class="panel-top">
+        {tag && <a class="eyebrow" href={`/tag/${tag}`}>{formatTag(tag)}</a>}
+        <div class="share-row" data-share>
+          <button type="button" class="share-btn" data-copy data-url={canonicalArticleUrl} aria-label="Copy link">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 12a3 3 0 0 0 4.24.24l2-2a3 3 0 0 0-4.24-4.24l-1 1"/><path d="M12 8a3 3 0 0 0-4.24-.24l-2 2a3 3 0 0 0 4.24 4.24l1-1"/></svg>
+          </button>
+          <a class="share-btn" href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`} target="_blank" rel="noopener noreferrer" aria-label="Share on X">
+            <svg viewBox="0 0 20 20" width="15" height="15" fill="currentColor"><path d="M11.9 8.6 18 2h-2l-5.2 5.7L6.7 2H1l6.4 9.2L1 18h2l5.6-6.1L13.3 18H19l-7.1-9.4Z"/></svg>
+          </a>
+          <a class="share-btn" href={`https://reddit.com/submit?url=${shareUrl}&title=${shareText}`} target="_blank" rel="noopener noreferrer" aria-label="Share on Reddit">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><circle cx="10" cy="11" r="7"/></svg>
+          </a>
+          <span class="toast" data-toast hidden>Link copied</span>
         </div>
-      )}
-      <div class="hero-panel">
-        <div class="panel-top">
-          {tag && <a class="eyebrow" href={`/tag/${tag}`}>{formatTag(tag)}</a>}
-          <div class="share-row" data-share>
-            <button type="button" class="share-btn" data-copy data-url={canonicalArticleUrl} aria-label="Copy link">
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 12a3 3 0 0 0 4.24.24l2-2a3 3 0 0 0-4.24-4.24l-1 1"/><path d="M12 8a3 3 0 0 0-4.24-.24l-2 2a3 3 0 0 0 4.24 4.24l1-1"/></svg>
-            </button>
-            <a class="share-btn" href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`} target="_blank" rel="noopener noreferrer" aria-label="Share on X">
-              <svg viewBox="0 0 20 20" width="15" height="15" fill="currentColor"><path d="M11.9 8.6 18 2h-2l-5.2 5.7L6.7 2H1l6.4 9.2L1 18h2l5.6-6.1L13.3 18H19l-7.1-9.4Z"/></svg>
-            </a>
-            <a class="share-btn" href={`https://reddit.com/submit?url=${shareUrl}&title=${shareText}`} target="_blank" rel="noopener noreferrer" aria-label="Share on Reddit">
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><circle cx="10" cy="11" r="7"/></svg>
-            </a>
-            <span class="toast" data-toast hidden>Link copied</span>
-          </div>
-        </div>
-        <div class="panel-bottom">
+      </div>
+
+      <div class="panel-body">
+        {!article.image && article.pixelArt && (
+          <img class="pixel-icon" src={article.pixelArt} alt="" />
+        )}
+        <div>
           <h1>{article.title}</h1>
           <div class="meta">
             <span>{article.sourceName}</span>
@@ -94,68 +92,24 @@ const articleKeywords = [
           </div>
         </div>
       </div>
+
+      {article.tags?.length > 0 && (
+        <ul class="tags">
+          {article.tags.map((t) => (
+            <li><a href={`/tag/${t}`}>{formatTag(t)}</a></li>
+          ))}
+        </ul>
+      )}
+
+      <a class="read-source" href={article.sourceUrl} target="_blank" rel="noopener noreferrer">
+        Read the full story at {article.sourceName} ↗
+      </a>
     </div>
 
     <div class="reading-col">
-      <div class="tags-row">
-        {article.tags?.length > 0 && (
-          <ul class="tags">
-            {article.tags.map((t) => (
-              <li><a href={`/tag/${t}`}>{formatTag(t)}</a></li>
-            ))}
-          </ul>
-        )}
-        <div class="tts-controls">
-          <button type="button" class="tts-restart-btn" data-tts-restart="all" aria-label="Restart" hidden>↺</button>
-          <button type="button" class="tts-btn" data-tts="all" aria-label="Read the article and our take aloud">
-            <span data-tts-icon>▶</span><span data-tts-label>Listen</span>
-          </button>
-        </div>
-      </div>
-
-      <section class="summary">
-        {toParagraphs(article.summary).map((paragraph) => (
-          <p set:html={renderInlineMarkdown(paragraph)} />
-        ))}
-      </section>
-
-      <section class="opinion">
-        <div class="opinion-head">
-          <div class="opinion-head-left">
-            {article.pixelArt && (
-              <button type="button" class="pixel-icon-btn" data-pixel-sound aria-label="Play a sound">
-                <img class="pixel-icon" src={article.pixelArt} alt="" />
-              </button>
-            )}
-            <div class="opinion-head-text">
-              <h2>Our take</h2>
-              <p class="opinion-note">Live commentary on a developing story, not a final verdict.</p>
-            </div>
-          </div>
-          <div class="tts-controls">
-            <button type="button" class="tts-restart-btn" data-tts-restart="opinion" aria-label="Restart" hidden>↺</button>
-            <button type="button" class="tts-btn" data-tts="opinion" aria-label="Read our take aloud">
-              <span data-tts-icon>▶</span><span data-tts-label>Listen</span>
-            </button>
-          </div>
-        </div>
-        {toParagraphs(article.opinion).map((paragraph) => (
-          <p set:html={renderInlineMarkdown(paragraph)} />
-        ))}
-      </section>
-
-      <script
-        type="application/json"
-        id="tts-data"
-        set:html={JSON.stringify({
-          slug: article.slug,
-          apiUrl: import.meta.env.PUBLIC_TTS_API_URL ?? "/api/tts",
-        })}
-      />
-
-      <p class="source-line">
-        This is our take on a developing story, not the final word — read the original reporting at{" "}
-        <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer">{article.sourceName} ↗</a>
+      <p class="ticker-note">
+        This is a headline entry, tracked as it broke — not a rewritten article. For the
+        full reporting, follow the link above to {article.sourceName}.
       </p>
 
       {related.length > 0 && (
@@ -168,17 +122,6 @@ const articleKeywords = [
           </div>
         </section>
       )}
-
-      <section class="newsletter-band">
-        <div>
-          <h3>Get the drama in your inbox</h3>
-          <p>Hourly rewrites of the internet's messiest stories, no fluff.</p>
-        </div>
-        <form onsubmit="return false">
-          <input type="email" placeholder="you@example.com" aria-label="Email address" disabled />
-          <button type="button" disabled>Subscribe</button>
-        </form>
-      </section>
 
       <p class="back"><a href="/blog">← Back to archive</a></p>
     </div>
@@ -200,342 +143,6 @@ const articleKeywords = [
       });
     });
   });
-
-  function getAudioCtx() {
-    var Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return null;
-    if (!window.__spaceCtx) window.__spaceCtx = new Ctx();
-    if (window.__spaceCtx.state === "suspended") window.__spaceCtx.resume();
-    return window.__spaceCtx;
-  }
-
-  function echoBus(ctx, mix) {
-    var delay = ctx.createDelay();
-    delay.delayTime.value = 0.16;
-    var feedback = ctx.createGain();
-    feedback.gain.value = 0.4;
-    var wet = ctx.createGain();
-    wet.gain.value = mix;
-    delay.connect(feedback);
-    feedback.connect(delay);
-    delay.connect(wet);
-    wet.connect(ctx.destination);
-    return delay;
-  }
-
-  function isSpeaking() {
-    return !!window.__ttsActive;
-  }
-
-  function playLaser() {
-    try {
-      if (isSpeaking()) return;
-      var ctx = getAudioCtx();
-      if (!ctx) return;
-      var now = ctx.currentTime;
-      var osc = ctx.createOscillator();
-      var filter = ctx.createBiquadFilter();
-      var gain = ctx.createGain();
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(1600, now);
-      osc.frequency.exponentialRampToValueAtTime(90, now + 0.28);
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(1800, now);
-      filter.frequency.exponentialRampToValueAtTime(400, now + 0.3);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.07, now + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
-      var delay = echoBus(ctx, 0.3);
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      gain.connect(delay);
-      osc.start(now);
-      osc.stop(now + 0.9);
-    } catch (err) {
-      // ignore audio failures (autoplay policy, unsupported browser, etc.)
-    }
-  }
-
-  function playUfo() {
-    try {
-      if (isSpeaking()) return;
-      var ctx = getAudioCtx();
-      if (!ctx) return;
-      var now = ctx.currentTime;
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      var lfo = ctx.createOscillator();
-      var lfoGain = ctx.createGain();
-      var trem = ctx.createOscillator();
-      var tremGain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(320, now);
-      lfo.frequency.setValueAtTime(5, now);
-      lfoGain.gain.setValueAtTime(60, now);
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc.frequency);
-      trem.frequency.setValueAtTime(9, now);
-      tremGain.gain.setValueAtTime(0.025, now);
-      trem.connect(tremGain);
-
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.07, now + 0.08);
-      tremGain.connect(gain.gain);
-      gain.gain.setValueAtTime(0.07, now + 0.7);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
-
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(now);
-      lfo.start(now);
-      trem.start(now);
-      osc.stop(now + 0.9);
-      lfo.stop(now + 0.9);
-      trem.stop(now + 0.9);
-    } catch (err) {
-      // ignore audio failures (autoplay policy, unsupported browser, etc.)
-    }
-  }
-
-  function playRocket() {
-    try {
-      if (isSpeaking()) return;
-      var ctx = getAudioCtx();
-      if (!ctx) return;
-      var now = ctx.currentTime;
-      var bufSize = ctx.sampleRate * 0.9;
-      var buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-      var data = buf.getChannelData(0);
-      for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-
-      var noise = ctx.createBufferSource();
-      noise.buffer = buf;
-      var filter = ctx.createBiquadFilter();
-      filter.type = "bandpass";
-      filter.Q.value = 1.4;
-      filter.frequency.setValueAtTime(180, now);
-      filter.frequency.exponentialRampToValueAtTime(2200, now + 0.9);
-      var gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.06, now + 0.5);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
-
-      noise.connect(filter).connect(gain).connect(ctx.destination);
-      noise.start(now);
-      noise.stop(now + 0.9);
-    } catch (err) {
-      // ignore audio failures (autoplay policy, unsupported browser, etc.)
-    }
-  }
-
-  var pixelIcon = document.querySelector(".pixel-icon");
-  var pixelIconBtn = document.querySelector("[data-pixel-sound]");
-  var opinionSection = document.querySelector(".opinion");
-
-  if (pixelIconBtn) {
-    pixelIconBtn.addEventListener("click", function () {
-      if (Math.random() < 0.5) playLaser();
-      else playUfo();
-    });
-  }
-
-  if (pixelIcon && opinionSection && "IntersectionObserver" in window) {
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          pixelIcon.classList.toggle("jump", entry.isIntersecting);
-          if (entry.isIntersecting) playRocket();
-        });
-      },
-      { threshold: 0.5 },
-    );
-    observer.observe(opinionSection);
-  }
-
-  (function () {
-    var dataEl = document.getElementById("tts-data");
-    var ttsData = { slug: "", apiUrl: "/api/tts" };
-    try {
-      ttsData = JSON.parse(dataEl ? dataEl.textContent : "{}");
-    } catch (err) {
-      ttsData = { slug: "", apiUrl: "/api/tts" };
-    }
-
-    // One entry per section (not per paragraph) — the backend checks its own
-    // MongoDB cache first and only generates fresh audio on a genuine miss,
-    // so every request here is cheap after the first listener for a section.
-    function buildQueue(mode) {
-      var sections = mode === "all" ? ["summary", "opinion"] : ["opinion"];
-      return sections.map(function (section) {
-        return { section: section };
-      });
-    }
-
-    var ttsButtons = document.querySelectorAll(".tts-btn");
-    var restartButtons = document.querySelectorAll("[data-tts-restart]");
-    var activeBtn = null;
-    var ttsState = "idle"; // "idle" | "loading" | "playing" | "paused"
-    var audioEl = new Audio();
-    var currentObjectUrl = null;
-
-    function restartButtonFor(btn) {
-      return document.querySelector('[data-tts-restart="' + btn.getAttribute("data-tts") + '"]');
-    }
-
-    function setButtonState(btn, state) {
-      btn.classList.toggle("is-playing", state === "playing");
-      btn.classList.toggle("is-paused", state === "paused");
-      var icon = btn.querySelector("[data-tts-icon]");
-      var label = btn.querySelector("[data-tts-label]");
-      if (state === "loading") {
-        if (icon) icon.textContent = "…";
-        if (label) label.textContent = "Loading";
-      } else if (state === "playing") {
-        if (icon) icon.textContent = "⏸";
-        if (label) label.textContent = "Pause";
-      } else if (state === "paused") {
-        if (icon) icon.textContent = "▶";
-        if (label) label.textContent = "Resume";
-      } else {
-        if (icon) icon.textContent = "▶";
-        if (label) label.textContent = "Listen";
-      }
-      // Only ever hide restart here — showing it is driven exclusively by
-      // the audio element's native "playing" event below, so it doesn't
-      // appear until sound has actually started (not just when .play() was
-      // called, since there's a real buffering/decoding gap before then).
-      var restartBtn = restartButtonFor(btn);
-      if (restartBtn && (state === "idle" || state === "loading")) {
-        restartBtn.hidden = true;
-      }
-    }
-
-    function setState(state) {
-      ttsState = state;
-      if (activeBtn) setButtonState(activeBtn, state);
-      window.__ttsActive = state === "playing";
-    }
-
-    function stopAll() {
-      audioEl.pause();
-      audioEl.removeAttribute("src");
-      if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl);
-        currentObjectUrl = null;
-      }
-      window.__ttsActive = false;
-      ttsButtons.forEach(function (btn) {
-        setButtonState(btn, "idle");
-      });
-      activeBtn = null;
-      ttsState = "idle";
-    }
-
-    function pauseCurrent() {
-      audioEl.pause();
-      setState("paused");
-    }
-
-    function resumeCurrent() {
-      audioEl.play();
-      setState("playing");
-    }
-
-    function playSrc(btn, src, revoke) {
-      if (activeBtn !== btn) return;
-      if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
-      currentObjectUrl = revoke ? src : null;
-      audioEl.src = src;
-      setState("playing");
-      audioEl.play();
-    }
-
-    function playQueue(btn, queue, index) {
-      if (activeBtn !== btn) return;
-      if (index >= queue.length) {
-        stopAll();
-        return;
-      }
-      var item = queue[index];
-      setState("loading");
-      var contentType = "audio/mpeg";
-      fetch(ttsData.apiUrl, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ slug: ttsData.slug, section: item.section }),
-      })
-        .then(function (res) {
-          if (!res.ok) throw new Error("tts request failed: " + res.status);
-          contentType = res.headers.get("content-type") || contentType;
-          return res.arrayBuffer();
-        })
-        .then(function (buf) {
-          if (activeBtn !== btn) return;
-          playSrc(btn, URL.createObjectURL(new Blob([buf], { type: contentType })), true);
-        })
-        .catch(function () {
-          if (activeBtn === btn) stopAll();
-        });
-    }
-
-    audioEl.addEventListener("ended", function () {
-      if (!activeBtn) return;
-      var btn = activeBtn;
-      var queue = buildQueue(btn.getAttribute("data-tts"));
-      var nextIndex = (btn.__ttsIndex || 0) + 1;
-      btn.__ttsIndex = nextIndex;
-      playQueue(btn, queue, nextIndex);
-    });
-
-    // Fires once audio is genuinely producing sound (including after a
-    // buffering stall), as opposed to the moment .play() was merely called.
-    audioEl.addEventListener("playing", function () {
-      if (!activeBtn) return;
-      var restartBtn = restartButtonFor(activeBtn);
-      if (restartBtn) restartBtn.hidden = false;
-    });
-
-    ttsButtons.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        if (activeBtn !== btn) {
-          // Switching to a different button (or starting fresh) always
-          // starts that button's queue from the beginning.
-          stopAll();
-          activeBtn = btn;
-          btn.__ttsIndex = 0;
-          var queue = buildQueue(btn.getAttribute("data-tts"));
-          playQueue(btn, queue, 0);
-          return;
-        }
-
-        // Same button clicked again: toggle pause/resume in place rather
-        // than discarding playback position, except while still loading —
-        // there's nothing to pause yet, so that just cancels.
-        if (ttsState === "playing") {
-          pauseCurrent();
-        } else if (ttsState === "paused") {
-          resumeCurrent();
-        } else {
-          stopAll();
-        }
-      });
-    });
-
-    restartButtons.forEach(function (restartBtn) {
-      restartBtn.addEventListener("click", function () {
-        var key = restartBtn.getAttribute("data-tts-restart");
-        var btn = document.querySelector('.tts-btn[data-tts="' + key + '"]');
-        if (!btn || activeBtn !== btn) return;
-        // Reset all the way back to idle ("Listen") rather than jumping
-        // straight back into playing — pausing then resuming from 0 would
-        // leave the button reading "Pause" the whole time, giving no visual
-        // sign anything happened. This makes the reset visible; clicking
-        // Listen again starts fresh from the top.
-        stopAll();
-      });
-    });
-  })();
 </script>
 
 <style>
@@ -543,63 +150,28 @@ const articleKeywords = [
     padding-top: var(--sp-32);
   }
 
-  .art-hero {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-24);
-    margin-bottom: var(--sp-48);
-  }
-
-  .art-hero.no-image {
-    grid-template-columns: 1fr;
+  .ticker-hero {
     max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .hero-image {
-    position: relative;
+    margin: 0 auto var(--sp-16);
     border-radius: 6px;
     overflow: hidden;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 9;
   }
 
-  .hero-image img {
+  .ticker-hero img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
 
-  .hero-image .pixel-hero {
-    object-fit: contain;
-    background: var(--mono-bg);
-    image-rendering: pixelated;
-  }
-
-  .hero-image img.pixel-sticker {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    width: 84px;
-    height: 84px;
-    object-fit: cover;
-    border: 3px solid var(--paper-raised);
-    border-radius: 8px;
-    box-shadow: var(--shadow-lg);
-    transform: rotate(-4deg);
-    image-rendering: pixelated;
-  }
-
-  .hero-panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+  .ticker-panel {
+    max-width: 700px;
+    margin: 0 auto var(--sp-48);
     background: color-mix(in srgb, var(--hue) 14%, var(--paper));
     border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--line));
     border-radius: 6px;
     padding: var(--sp-24);
-    min-height: 240px;
   }
 
   .panel-top {
@@ -607,6 +179,7 @@ const articleKeywords = [
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
+    margin-bottom: var(--sp-16);
   }
 
   .eyebrow {
@@ -658,10 +231,24 @@ const articleKeywords = [
     white-space: nowrap;
   }
 
-  .panel-bottom h1 {
-    font-size: clamp(1.6rem, 3vw, 2.3rem);
-    line-height: 1.05;
-    margin: 0 0 0.6rem;
+  .panel-body {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-16);
+  }
+
+  .pixel-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+    border-radius: 4px;
+  }
+
+  .panel-body h1 {
+    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+    line-height: 1.1;
+    margin: 0 0 0.5rem;
   }
 
   .meta {
@@ -673,26 +260,12 @@ const articleKeywords = [
     color: var(--ink-faint);
   }
 
-  .reading-col {
-    max-width: 700px;
-    margin: 0 auto;
-  }
-
-  .tags-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin: 0 0 var(--sp-24);
-  }
-
   .tags {
     list-style: none;
     display: flex;
     gap: 0.5rem;
     padding: 0;
-    margin: 0;
+    margin: var(--sp-16) 0 0;
     flex-wrap: wrap;
   }
 
@@ -700,7 +273,7 @@ const articleKeywords = [
     font-size: 0.76rem;
     color: var(--ink-soft);
     border: 1px solid var(--line);
-    background: var(--mono-bg);
+    background: var(--paper-raised);
     border-radius: 999px;
     padding: 0.2rem 0.7rem;
     text-decoration: none;
@@ -711,221 +284,34 @@ const articleKeywords = [
     color: var(--ink);
   }
 
-  .summary p {
-    font-size: 1.08rem;
-    max-width: none;
-  }
-
-  .opinion {
-    margin: var(--sp-32) 0;
-    padding: var(--sp-24);
-    background: var(--note-wash);
-    border-left: 3px solid var(--note);
-    border-radius: 0 6px 6px 0;
-  }
-
-  .opinion-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-    margin: 0 0 0.7rem;
-  }
-
-  .opinion-head-left {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .opinion-head-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-  }
-
-  .opinion-note {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 0.68rem;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    color: var(--ink-faint);
-    margin: 0;
-    text-transform: none;
-  }
-
-  .tts-controls {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-
-  .tts-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 0.74rem;
-    color: var(--ink-soft);
-    background: var(--paper-raised);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 0.35rem 0.8rem;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: color 0.15s ease, border-color 0.15s ease;
-  }
-
-  .tts-restart-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.9rem;
-    height: 1.9rem;
-    font-size: 0.9rem;
-    color: var(--ink-soft);
-    background: var(--paper-raised);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 0;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-  }
-
-  .tts-restart-btn:hover {
-    color: var(--ink);
-    border-color: var(--ink-faint);
-    transform: rotate(-45deg);
-  }
-
-  .tts-restart-btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  .tts-restart-btn[hidden] {
-    display: none;
-  }
-
-  .tts-btn:hover {
-    color: var(--ink);
-    border-color: var(--ink-faint);
-  }
-
-  .tts-btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  .tts-btn.is-playing,
-  .tts-btn.is-paused {
-    color: var(--accent);
-    border-color: var(--accent);
-  }
-
-  .tts-btn [data-tts-icon] {
-    font-size: 0.65rem;
-  }
-
-  .pixel-icon-btn {
-    display: inline-flex;
-    padding: 0;
-    border: none;
-    background: none;
-    cursor: pointer;
+  .read-source {
+    display: inline-block;
+    margin-top: var(--sp-24);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--paper);
+    background: var(--hue);
     border-radius: 4px;
-    transition: transform 0.15s ease;
+    padding: 0.7rem 1.1rem;
+    text-decoration: none;
   }
 
-  .pixel-icon-btn:hover {
-    transform: scale(1.12);
+  .read-source:hover {
+    opacity: 0.9;
   }
 
-  .pixel-icon-btn:active {
-    transform: scale(0.92);
+  .reading-col {
+    max-width: 700px;
+    margin: 0 auto;
   }
 
-  .pixel-icon-btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  .pixel-icon {
-    width: 28px;
-    height: 28px;
-    image-rendering: pixelated;
-    border-radius: 4px;
-    flex-shrink: 0;
-    transform-origin: bottom center;
-    display: block;
-  }
-
-  .pixel-icon.jump {
-    animation: pixel-jump 0.9s steps(5, end);
-  }
-
-  @keyframes pixel-jump {
-    0% {
-      transform: translateY(0) scale(1) rotate(0deg);
-    }
-    10% {
-      transform: translateY(6px) scale(1.2, 0.75) rotate(0deg);
-    }
-    40% {
-      transform: translateY(-28px) scale(0.8, 1.2) rotate(-8deg);
-    }
-    55% {
-      transform: translateY(-28px) scale(0.8, 1.2) rotate(8deg);
-    }
-    75% {
-      transform: translateY(0) scale(1.2, 0.75) rotate(0deg);
-    }
-    88% {
-      transform: translateY(-10px) scale(1) rotate(0deg);
-    }
-    100% {
-      transform: translateY(0) scale(1) rotate(0deg);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .pixel-icon.jump {
-      animation: none;
-    }
-  }
-
-  .opinion h2 {
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    color: var(--note);
-    margin: 0;
-  }
-
-  .opinion p {
-    color: var(--ink);
-    max-width: none;
-    margin: 0 0 0.85rem;
-  }
-
-  .opinion p:last-child {
-    margin-bottom: 0;
-  }
-
-  .source-line {
+  .ticker-note {
     font-size: 0.85rem;
     color: var(--ink-faint);
   }
 
-  .source-line a {
-    color: var(--accent);
-    text-decoration: none;
-  }
-
   .related {
-    margin-top: var(--sp-48);
+    margin-top: var(--sp-32);
     padding-top: var(--sp-32);
     border-top: 1px solid var(--line);
   }
@@ -939,58 +325,6 @@ const articleKeywords = [
     grid-template-columns: repeat(2, 1fr);
     gap: var(--sp-24);
     margin-top: var(--sp-16);
-  }
-
-  .newsletter-band {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sp-24);
-    background: var(--paper-raised);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: var(--sp-24);
-    margin-top: var(--sp-48);
-  }
-
-  .newsletter-band h3 {
-    font-size: 1.15rem;
-    margin: 0 0 0.3rem;
-  }
-
-  .newsletter-band p {
-    font-size: 0.85rem;
-    margin: 0;
-  }
-
-  .newsletter-band form {
-    display: flex;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  .newsletter-band input {
-    font: inherit;
-    font-size: 0.86rem;
-    padding: 0.55rem 0.7rem;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background: var(--paper);
-    color: var(--ink);
-  }
-
-  .newsletter-band button {
-    font: inherit;
-    font-weight: 700;
-    font-size: 0.86rem;
-    padding: 0.55rem 0.9rem;
-    border: none;
-    border-radius: 4px;
-    background: var(--accent);
-    color: var(--paper);
-    cursor: not-allowed;
-    opacity: 0.6;
-    white-space: nowrap;
   }
 
   .back {
@@ -1007,25 +341,8 @@ const articleKeywords = [
   }
 
   @media (max-width: 900px) {
-    .art-hero {
-      grid-template-columns: 1fr;
-    }
-
     .related-grid {
       grid-template-columns: 1fr;
-    }
-
-    .newsletter-band {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .newsletter-band form {
-      width: 100%;
-    }
-
-    .newsletter-band input {
-      flex: 1;
     }
   }
 </style>

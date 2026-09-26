@@ -23,6 +23,11 @@ const tagHref = tag ? `/tag/${tag}` : null;
       <img src={article.image} alt="" loading="lazy" />
     </a>
   )}
+  {variant !== "text" && !article.image && article.pixelArt && (
+    <a class="thumb pixel-thumb" href={href} tabindex="-1" aria-hidden="true">
+      <img src={article.pixelArt} alt="" loading="lazy" />
+    </a>
+  )}
   <div class="body">
     {tag && (
       <a class="eyebrow" href={tagHref}>{formatTag(tag)}</a>
@@ -63,6 +68,12 @@ const tagHref = tag ? `/tag/${tag}` : null;
     object-fit: cover;
     display: block;
     transition: transform 0.35s ease;
+  }
+
+  .pixel-thumb img {
+    object-fit: contain;
+    image-rendering: pixelated;
+    padding: 12%;
   }
 
   .story:hover .thumb img {

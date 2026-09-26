@@ -4,56 +4,55 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout
   title="About Us — DigitalDramaa"
-  description="How DigitalDramaa tracks internet drama, gaming drama, and tech scandals — and how our live, AI-assisted commentary actually works."
-  keywords={["DigitalDramaa", "about digitaldramaa", "internet drama site", "AI news commentary", "gaming drama news", "tech scandal news"]}
+  description="How DigitalDramaa's Archive and Commentary sections work, and who's behind the original analysis."
+  keywords={["DigitalDramaa", "about digitaldramaa", "internet drama site", "gaming drama news", "tech scandal news"]}
+  monetize
 >
   <section class="page-head">
     <span class="eyebrow">About</span>
     <h1>About DigitalDramaa</h1>
-    <p>Live commentary on internet drama, gaming drama, and tech chaos — refreshed hourly.</p>
+    <p>Two sections, kept separate: an hourly Archive, and original Commentary.</p>
   </section>
 
   <section class="prose">
-    <h2>What We Do</h2>
+    <h2>The Archive</h2>
     <p>
-      DigitalDramaa tracks the internet's messiest stories as they break — gaming
-      leaks, streamer callouts, platform bans, data breaches, and the influencer
-      drama that dominates timelines for a day and then disappears. We pull from
-      a wide net of gaming, tech, and internet-culture sources, rewrite each
-      story in plain language, and add a short, opinionated "Our take" within
-      the hour.
+      The Archive is an automated headline tracker. It continuously scans a
+      set of gaming, tech, and internet-culture feeds and, when a genuinely
+      new story shows up, adds a short entry — headline, source, and a link
+      straight to the original reporting. No rewritten article body, no
+      AI-generated opinion. It exists to catch things early and to help us
+      find what's worth writing about, not to publish commentary itself,
+      which is why Archive pages aren't indexed by search engines.
     </p>
 
-    <h2>How It Works</h2>
+    <h2>Commentary</h2>
     <p>
-      Every article on this site starts as reporting published somewhere else.
-      Our system continuously scans a set of gaming, tech, and internet-culture
-      feeds, and when a genuinely new story shows up, it's summarized and
-      rewritten using AI, then published with a link back to the original
-      source. We are not the ones breaking these stories — we're helping you
-      catch up on them faster.
+      Commentary is where DigitalDramaa actually publishes. Every post is
+      written under the <strong>DigitalDramaa Editorial</strong> byline, and
+      every post naming a real person or organization is reviewed by a human
+      editor before it goes live — see our{" "}
+      <a href="/editorial-policy">editorial policy</a> for the full rules on
+      how that works, sourcing, and corrections.
     </p>
 
-    <h2>Our Editorial Approach</h2>
+    <h2>How AI Is Used Here</h2>
     <p>
-      The "Our take" section on every article is exactly that — a take, not a
-      verdict. Internet drama is often still unfolding when we publish, so our
-      commentary reflects where a story stands at that moment, not a final
-      conclusion. Claims about real people that are disputed or unconfirmed are
-      reported as alleged, not stated as fact, and we link to the original
-      reporting on every story so you can always go check the source yourself.
+      AI helps with research and drafting — finding stories, gathering
+      sources, and putting together a first pass. It does not publish
+      anything on its own, and it does not write opinions about named real
+      people without a human editor reviewing them first. That review is
+      what separates Commentary from the Archive.
     </p>
 
-    <h2>Transparency</h2>
+    <h2>Questions or Corrections</h2>
     <p>
-      DigitalDramaa is upfront about what it is: an automated site that uses AI
-      to summarize and comment on stories reported elsewhere. We're not a wire
-      service and we don't claim original reporting credit for the underlying
-      news — our value is speed, organization, and a quick read on why a story
-      matters, with a clear path back to the original source for anyone who
-      wants the full picture. See our <a href="/terms-and-conditions">Terms & Conditions</a>
-      and <a href="/privacy-policy">Privacy Policy</a> for more detail, or
-      <a href="/contact">contact us</a> with questions or correction requests.
+      See our <a href="/editorial-policy">editorial policy</a> for how we
+      handle claims about real people and corrections, our{" "}
+      <a href="/terms-and-conditions">Terms & Conditions</a> and{" "}
+      <a href="/privacy-policy">Privacy Policy</a> for more detail, or{" "}
+      <a href="/contact">contact us</a> directly with questions or correction
+      requests.
     </p>
   </section>
 </Layout>

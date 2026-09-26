@@ -32,6 +32,8 @@ interface Props {
   publishedTime?: string;
   modifiedTime?: string;
   articleTags?: string[];
+  noindex?: boolean;
+  monetize?: boolean;
 }
 
 const {
@@ -44,6 +46,8 @@ const {
   publishedTime,
   modifiedTime,
   articleTags,
+  noindex = false,
+  monetize = false,
 } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.url.origin).toString();
@@ -59,7 +63,7 @@ const ogImageUrl = new URL(image, Astro.url.origin).toString();
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
     <meta name="keywords" content={keywords.join(", ")} />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={noindex ? "noindex, follow" : "index, follow"} />
     <link rel="canonical" href={canonicalUrl} />
     <title>{title}</title>
 
@@ -115,8 +119,10 @@ const ogImageUrl = new URL(image, Astro.url.origin).toString();
       gtag('config', 'G-1SBYPYTLQJ');
     </script>
 
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7283129222281584"
-     crossorigin="anonymous"></script>
+    {monetize && (
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7283129222281584"
+       crossorigin="anonymous"></script>
+    )}
 
     <script is:inline>
       (function () {

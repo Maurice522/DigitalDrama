@@ -7,6 +7,7 @@ import Parser from "rss-parser";
 import { connectDb, alreadyExists, recentTopicExists, saveAudio } from "./db.js";
 import { isDigitalDrama } from "./filter.js";
 import { extractImage } from "./image.js";
+import { downloadImage } from "./downloadImage.js";
 import { generateArticleImage } from "./imageGen.js";
 import { generatePixelArt } from "./pixelArt.js";
 import { generateAudio } from "./tts.js";
@@ -64,16 +65,20 @@ async function main() {
 
         console.log(`Relevant: ${item.title}`);
 
-        // Prefer the source's own image over a generated one. Only bother
-        // generating (and spending the request) when the origin has none.
-        const originImage = extractImage(item);
+        // Prefer the source's own image over a generated one. Either way we
+        // end up storing our own copy — the source URL is only ever used to
+        // download from, never rendered directly, so the site never
+        // hotlinks a publisher's CDN.
+        const originImageUrl = extractImage(item);
 
-        // Run the text rewrite and the hero image generation in parallel
-        // rather than one after another, so image generation never adds
-        // latency on top of the LLM call.
+        // Run the text rewrite and the hero image fetch/generation in
+        // parallel rather than one after another, so neither adds latency
+        // on top of the other.
         const [rewrittenResult, heroImageResult] = await Promise.allSettled([
           rewriteWithOpinion(item, LLM_API_KEY),
-          originImage ? Promise.resolve(null) : generateArticleImage({ title: item.title, context: item.contentSnippet }),
+          originImageUrl
+            ? downloadImage(originImageUrl)
+            : generateArticleImage({ title: item.title, context: item.contentSnippet }),
         ]);
 
         if (rewrittenResult.status === "rejected") {
@@ -89,7 +94,10 @@ async function main() {
           continue;
         }
 
-        const generatedImage = heroImageResult.status === "fulfilled" ? heroImageResult.value : null;
+        // A stored data URI either way (downloaded origin image or
+        // AI-generated) — null only if both the download and generation
+        // paths failed, in which case the site falls back to pixel art.
+        const heroImage = heroImageResult.status === "fulfilled" ? heroImageResult.value : null;
         // Local, synchronous, and seeded from the opinion text, so it always
         // runs after the rewrite rather than in parallel with it.
         const generatedPixelArt = generatePixelArt({ title: item.title, context: rewritten.opinion });
@@ -100,7 +108,7 @@ async function main() {
           slug: slugify(item.title, publishedAt),
           summary: rewritten.summary,
           opinion: rewritten.opinion,
-          image: originImage ?? generatedImage,
+          image: heroImage,
           pixelArt: generatedPixelArt,
           sourceUrl,
           sourceName: feed.name,

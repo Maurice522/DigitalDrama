@@ -1,0 +1,128 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const CONTACT_EMAIL = "hello@digitaldramaa.com";
+---
+
+<Layout
+  title="Editorial Policy — DigitalDramaa"
+  description="How DigitalDramaa's Commentary section is written, reviewed, and corrected — and how AI is and isn't used."
+  keywords={["DigitalDramaa", "editorial policy", "corrections policy"]}
+  monetize
+>
+  <section class="page-head">
+    <span class="eyebrow">Editorial</span>
+    <h1>Editorial Policy</h1>
+    <p>How Commentary gets made, and how to flag a problem.</p>
+  </section>
+
+  <section class="prose">
+    <h2>Archive vs. Commentary</h2>
+    <p>
+      DigitalDramaa has two sections. The <a href="/blog">Archive</a> is an
+      automated headline tracker — no rewritten article body, no AI-generated
+      opinion, and it isn't indexed by search engines. <a href="/commentary">Commentary</a>
+      is where original analysis is actually published, under the
+      DigitalDramaa Editorial byline. This policy is about Commentary.
+    </p>
+
+    <h2>How AI Is Used</h2>
+    <p>
+      AI can help find stories, gather sources, and draft structure. It does
+      not publish anything on its own, and it does not write opinions about
+      real people without a human editor reviewing them first. AI-written
+      content isn't the problem being managed here — content that adds
+      nothing beyond a source article is, so every Commentary post is
+      expected to add context, history, or analysis that isn't already in
+      the source reporting.
+    </p>
+
+    <h2>Claims About Real People</h2>
+    <p>
+      Disputed or unconfirmed claims about named individuals are written as
+      alleged and attributed to their source ("according to X"), never
+      stated as settled fact. Commentary criticizes actions, not people's
+      character, and doesn't call for shaming or pile-ons. Every post naming
+      an individual is reviewed and approved by a human editor before it
+      publishes. We generally avoid covering private individuals who went
+      viral by circumstance, focusing instead on public figures, companies,
+      and platforms.
+    </p>
+
+    <h2>Sourcing</h2>
+    <p>
+      Every Commentary post cites its sources explicitly and links to them.
+      Where a story draws on multiple outlets, we combine them into one
+      piece rather than publishing near-duplicate posts per source, and
+      quote sparingly rather than reproducing large chunks of someone else's
+      reporting.
+    </p>
+
+    <h2>Corrections</h2>
+    <p>
+      If something on the site is inaccurate, misattributed, or you're the
+      subject of a post and want to flag a concern, email{" "}
+      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with the link
+      and a short description of the issue. We review correction requests
+      directly and update or remove content when warranted — see our{" "}
+      <a href="/contact">Contact page</a> for other ways to reach us.
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .page-head {
+    padding: var(--sp-32) 0 var(--sp-24);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--sp-32);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-wash);
+    padding: 3px 9px;
+    border-radius: 3px;
+    margin-bottom: 0.6rem;
+  }
+
+  .page-head h1 {
+    font-size: 2.4rem;
+    margin: 0 0 0.2rem;
+  }
+
+  .page-head p {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  .prose {
+    max-width: 72ch;
+    padding-bottom: var(--sp-64);
+  }
+
+  .prose h2 {
+    font-size: 1.5rem;
+    margin: var(--sp-32) 0 0.6rem;
+  }
+
+  .prose h2:first-child {
+    margin-top: 0;
+  }
+
+  .prose p {
+    font-size: 0.95rem;
+    max-width: none;
+  }
+
+  .prose a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+</style>

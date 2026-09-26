@@ -1,0 +1,221 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getOriginals } from "../../lib/originals";
+import { toParagraphs, renderInlineMarkdown, excerpt } from "../../lib/text";
+import { formatRelative, formatAbsolute } from "../../lib/time";
+import { hueIndexForTag, formatTag } from "../../lib/tags";
+
+export async function getStaticPaths() {
+  const posts = await getOriginals();
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const hue = post.tags?.[0] ? hueIndexForTag(post.tags[0]) : 0;
+
+const commentaryKeywords = [
+  "DigitalDramaa",
+  ...(post.tags ?? []),
+  "internet drama",
+  "gaming drama",
+  "tech scandal",
+];
+---
+
+<Layout
+  title={`${post.title} — DigitalDramaa Commentary`}
+  description={post.excerpt || excerpt(post.body, 160)}
+  keywords={commentaryKeywords}
+  imageAlt={post.title}
+  image={post.heroImage ?? undefined}
+  type="article"
+  publishedTime={post.publishedAt}
+  modifiedTime={post.updatedAt}
+  articleTags={post.tags}
+  monetize
+>
+  <article class="post" style={`--hue: var(--h${hue})`}>
+    <header class="post-head">
+      {post.tags?.[0] && (
+        <a class="eyebrow" href={`/tag/${post.tags[0]}`}>{formatTag(post.tags[0])}</a>
+      )}
+      <h1>{post.title}</h1>
+      <div class="meta">
+        <span>By {post.author}</span>
+        <span class="dot">·</span>
+        <time datetime={post.publishedAt} title={formatAbsolute(post.publishedAt)}>
+          {formatRelative(post.publishedAt)}
+        </time>
+      </div>
+    </header>
+
+    {post.heroImage && (
+      <div class="hero-image">
+        <img src={post.heroImage} alt="" />
+      </div>
+    )}
+
+    <div class="reading-col">
+      {post.tags?.length > 0 && (
+        <ul class="tags">
+          {post.tags.map((t) => (
+            <li><a href={`/tag/${t}`}>{formatTag(t)}</a></li>
+          ))}
+        </ul>
+      )}
+
+      <section class="body">
+        {toParagraphs(post.body).map((paragraph) => (
+          <p set:html={renderInlineMarkdown(paragraph)} />
+        ))}
+      </section>
+
+      {post.sources?.length > 0 && (
+        <section class="sources">
+          <h2>Sources</h2>
+          <ul>
+            {post.sources.map((source) => (
+              <li>
+                <a href={source.url} target="_blank" rel="noopener noreferrer">{source.name} ↗</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <p class="back"><a href="/commentary">← Back to Commentary</a></p>
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .post {
+    padding-top: var(--sp-32);
+  }
+
+  .post-head {
+    max-width: 700px;
+    margin: 0 auto var(--sp-32);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hue);
+    background: color-mix(in srgb, var(--hue) 16%, var(--paper));
+    padding: 3px 9px;
+    border-radius: 3px;
+    text-decoration: none;
+    margin-bottom: 0.6rem;
+  }
+
+  .post-head h1 {
+    font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+    line-height: 1.08;
+    margin: 0 0 0.6rem;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
+
+  .hero-image {
+    max-width: 900px;
+    margin: 0 auto var(--sp-32);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .hero-image img {
+    width: 100%;
+    display: block;
+  }
+
+  .reading-col {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .tags {
+    list-style: none;
+    display: flex;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0 0 var(--sp-24);
+    flex-wrap: wrap;
+  }
+
+  .tags a {
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    background: var(--mono-bg);
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+    text-decoration: none;
+    text-transform: capitalize;
+  }
+
+  .tags a:hover {
+    color: var(--ink);
+  }
+
+  .body p {
+    font-size: 1.08rem;
+    max-width: none;
+  }
+
+  .sources {
+    margin-top: var(--sp-32);
+    padding-top: var(--sp-24);
+    border-top: 1px solid var(--line);
+  }
+
+  .sources h2 {
+    font-size: 1.1rem;
+    margin: 0 0 0.6rem;
+  }
+
+  .sources ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .sources a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .sources a:hover {
+    text-decoration: underline;
+  }
+
+  .back {
+    margin-top: var(--sp-32);
+  }
+
+  .back a {
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+
+  .back a:hover {
+    color: var(--ink);
+  }
+</style>

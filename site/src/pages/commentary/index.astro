@@ -1,0 +1,176 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getOriginals } from "../../lib/originals";
+import { formatTag, hueIndexForTag } from "../../lib/tags";
+import { formatRelative, formatAbsolute } from "../../lib/time";
+
+const posts = await getOriginals();
+---
+
+<Layout
+  title="Commentary — DigitalDramaa"
+  description="Original, human-written and human-reviewed analysis on internet drama, gaming drama, and tech scandals — with real sources cited."
+  keywords={["DigitalDramaa", "internet drama commentary", "gaming drama analysis", "tech scandal commentary"]}
+  monetize
+>
+  <section class="page-head">
+    <span class="eyebrow">Commentary</span>
+    <h1>Original Analysis</h1>
+    <p>
+      Written and reviewed by a human editor before it publishes — not the
+      automated headline tracker in the <a href="/blog">Archive</a>.
+    </p>
+  </section>
+
+  {posts.length === 0 && (
+    <p class="empty">
+      Nothing published here yet — Commentary posts go through human research
+      and review before they go live, so this section fills in more slowly
+      than the Archive. Check back soon, or see the{" "}
+      <a href="/editorial-policy">editorial policy</a> for how these get made.
+    </p>
+  )}
+
+  <div class="grid">
+    {posts.map((post) => {
+      const hue = post.tags?.[0] ? hueIndexForTag(post.tags[0]) : 0;
+      return (
+        <article class="card" style={`--hue: var(--h${hue})`}>
+          {post.tags?.[0] && (
+            <a class="eyebrow-tag" href={`/tag/${post.tags[0]}`}>{formatTag(post.tags[0])}</a>
+          )}
+          <a class="headline" href={`/commentary/${post.slug}`}>
+            <h2>{post.title}</h2>
+          </a>
+          <p class="dek">{post.excerpt}</p>
+          <div class="meta">
+            <span>{post.author}</span>
+            <span class="dot">·</span>
+            <time datetime={post.publishedAt} title={formatAbsolute(post.publishedAt)}>
+              {formatRelative(post.publishedAt)}
+            </time>
+          </div>
+        </article>
+      );
+    })}
+  </div>
+</Layout>
+
+<style>
+  .page-head {
+    padding: var(--sp-32) 0 var(--sp-24);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--sp-32);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-wash);
+    padding: 3px 9px;
+    border-radius: 3px;
+    margin-bottom: 0.6rem;
+  }
+
+  .page-head h1 {
+    font-size: 2.4rem;
+    margin: 0 0 0.4rem;
+  }
+
+  .page-head p {
+    font-size: 0.95rem;
+    max-width: 60ch;
+  }
+
+  .page-head a {
+    color: var(--accent);
+  }
+
+  .empty {
+    color: var(--ink-faint);
+    max-width: 60ch;
+    padding: 1.5rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+
+  .empty a {
+    color: var(--accent);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-32);
+    padding-bottom: var(--sp-64);
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .eyebrow-tag {
+    align-self: flex-start;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hue);
+    background: color-mix(in srgb, var(--hue) 16%, var(--paper));
+    padding: 2px 8px;
+    border-radius: 3px;
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+  }
+
+  .headline {
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .headline h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  .headline:hover h2 {
+    color: var(--hue);
+  }
+
+  .dek {
+    color: var(--ink-soft);
+    margin: 0.5rem 0 0;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 0.6rem;
+  }
+
+  .dot {
+    opacity: 0.6;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

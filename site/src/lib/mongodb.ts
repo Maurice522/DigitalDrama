@@ -26,7 +26,7 @@ const uri = import.meta.env.MONGODB_URI ?? process.env.MONGODB_URI;
 let client: MongoClient | null = null;
 let db: Db | null = null;
 
-async function getDb(): Promise<Db> {
+export async function getDb(): Promise<Db> {
   if (db) return db;
   if (!uri) throw new Error("MONGODB_URI is not set");
   client = new MongoClient(uri);
@@ -46,11 +46,17 @@ export async function getArticles(): Promise<Article[]> {
   articlesPromise = (async () => {
     try {
       const database = await getDb();
+      // Sorted in JS rather than via MongoDB's .sort() — articles now embed
+      // downloaded hero images as data URIs, and the resulting documents are
+      // large enough that an in-memory server-side sort across the whole
+      // collection exceeds MongoDB's 32MB sort limit. We're already pulling
+      // every document into memory for the build, so sorting here costs
+      // nothing extra.
       const articles = await database
         .collection<Article>("articles")
         .find({})
-        .sort({ publishedAt: -1 })
         .toArray();
+      articles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
       return JSON.parse(JSON.stringify(articles));
     } catch (err) {
       console.warn(`[mongodb] Skipping articles, could not connect: ${(err as Error).message}`);

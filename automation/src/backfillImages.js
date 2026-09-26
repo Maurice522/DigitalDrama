@@ -1,8 +1,10 @@
 import "dotenv/config";
 
 import { connectDb } from "./db.js";
+import { downloadImage } from "./downloadImage.js";
 import { generateArticleImage } from "./imageGen.js";
 import { generatePixelArt } from "./pixelArt.js";
+import { compressImage, toDataUri } from "./imageOptimize.js";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -12,6 +14,48 @@ async function main() {
   const { client, articles } = await connectDb(MONGODB_URI);
 
   try {
+    // Articles ingested before downloadImage.js existed have a live
+    // publisher URL sitting in `image` instead of a stored data URI — the
+    // exact hotlinking this field is meant to avoid. Re-download and
+    // replace those first; anything that fails to redownload is cleared so
+    // it falls into the missing-image pass below instead of quietly staying
+    // a hotlink.
+    const hotlinked = await articles
+      .find({ image: { $regex: /^https?:\/\// } })
+      .toArray();
+
+    console.log(`${hotlinked.length} article(s) have a hotlinked image URL to replace.`);
+
+    for (const article of hotlinked) {
+      console.log(`Downloading: ${article.title}`);
+      const image = await downloadImage(article.image);
+      await articles.updateOne({ _id: article._id }, { $set: { image: image ?? null } });
+      console.log(image ? `Replaced with stored copy: ${article.slug}` : `Download failed, cleared: ${article.slug}`);
+    }
+
+    // Stored images (downloaded or AI-generated) from before imageOptimize.js
+    // existed are full-size — they get embedded as data URIs on every page
+    // that features them (homepage, archive, tag pages, related stories, and
+    // their own page), so an uncompressed original multiplies fast. Recompress
+    // anything that isn't already our WebP output.
+    const uncompressed = await articles
+      .find({ image: { $regex: /^data:image\/(?!webp)/ } })
+      .toArray();
+
+    console.log(`${uncompressed.length} stored image(s) need compressing to WebP.`);
+
+    for (const article of uncompressed) {
+      try {
+        const base64 = article.image.slice(article.image.indexOf(",") + 1);
+        const original = Buffer.from(base64, "base64");
+        const compressed = await compressImage(original);
+        await articles.updateOne({ _id: article._id }, { $set: { image: toDataUri(compressed) } });
+        console.log(`Compressed: ${article.slug} (${original.byteLength} -> ${compressed.buffer.byteLength} bytes)`);
+      } catch (err) {
+        console.warn(`Failed to compress ${article.slug}: ${err.message}`);
+      }
+    }
+
     const missingImage = await articles
       .find({ $or: [{ image: null }, { image: { $exists: false } }] })
       .toArray();

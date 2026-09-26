@@ -1,7 +1,9 @@
+import { compressImage, toDataUri } from "./imageOptimize.js";
+
 // Free, keyless image generation via Pollinations.ai (Stable Diffusion/Flux
 // backend, no API key or billing required). We fetch the bytes once at
-// generation time and store them as a data URI, so the site never depends on
-// Pollinations being reachable later.
+// generation time, compress them, and store the result as a data URI, so the
+// site never depends on Pollinations being reachable later.
 const REQUEST_TIMEOUT_MS = 60_000;
 
 async function fetchGeneratedImage(prompt, { width, height }) {
@@ -18,8 +20,8 @@ async function fetchGeneratedImage(prompt, { width, height }) {
   }
 
   const buffer = Buffer.from(await response.arrayBuffer());
-  const contentType = response.headers.get("content-type") || "image/jpeg";
-  return `data:${contentType};base64,${buffer.toString("base64")}`;
+  const compressed = await compressImage(buffer);
+  return toDataUri(compressed);
 }
 
 // The free Pollinations service has variable latency and occasionally times

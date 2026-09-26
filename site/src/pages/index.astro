@@ -35,43 +35,39 @@ const topics = groupByTag(articles)
 const faqs = [
   {
     q: "What is DigitalDramaa?",
-    a: "DigitalDramaa is a live commentary site covering internet drama, gaming drama, influencer callouts, and tech scandals. It pulls from a wide net of gaming, tech, and internet-culture sources, rewrites each story, and adds a distinct take — refreshed hourly.",
+    a: "DigitalDramaa has two parts: an hourly Archive that tracks internet drama, gaming drama, and tech scandal headlines as they break, and a Commentary section with original, human-written and human-reviewed analysis. They're kept clearly separate — see the next few questions for how.",
   },
   {
-    q: "Is DigitalDramaa's content written by AI?",
-    a: "Yes. Every summary and \"Our take\" section is AI-generated commentary on third-party reporting, not original reporting. We're upfront about that rather than passing it off as human journalism.",
+    q: "Is the Archive written by AI?",
+    a: "The Archive is an automated headline tracker: each entry is a short, factual pointer to a story with a link straight to the original reporting — no rewritten article body, and no AI-generated opinion. It exists to catch things early, not to publish commentary, which is why Archive pages aren't indexed by search engines or ad-supported.",
+  },
+  {
+    q: "What is the Commentary section, and how is it different?",
+    a: "Commentary is where DigitalDramaa actually publishes: original analysis, written and reviewed by a human editor before anything goes live, with real sources cited. It's the part of the site meant to be read, shared, and indexed — the Archive is just the radar that helps find the stories worth writing about.",
   },
   {
     q: "How often does DigitalDramaa publish new stories?",
-    a: "New articles are added automatically, refreshed hourly, as relevant stories show up across the source feeds we track.",
+    a: "The Archive refreshes hourly as relevant headlines show up across the source feeds we track. Commentary publishes on its own slower pace — a handful of reviewed posts, not a firehose.",
   },
   {
     q: "Where does DigitalDramaa get its stories from?",
-    a: "From a set of gaming, tech, and internet-culture RSS feeds. Every article links back to the original reporting so you can read the full source yourself.",
-  },
-  {
-    q: "Is the \"Our take\" section DigitalDramaa's final verdict on a story?",
-    a: "No — it's live commentary on a developing story, not a final verdict. Stories often keep evolving after we cover them, and our take is meant to be read that way.",
+    a: "From a set of gaming, tech, and internet-culture RSS feeds. Every Archive entry links straight to the original reporting; every Commentary post cites its sources explicitly.",
   },
   {
     q: "Does DigitalDramaa report on real people fairly?",
-    a: "We aim to. Disputed claims about real people are reported as alleged, not stated as fact, and every article links back to the source so you can check the original claim yourself.",
+    a: "That's specifically what the Commentary editorial policy exists for: disputed claims are reported as alleged, not stated as fact, commentary criticizes actions rather than people's character, and every post naming an individual gets human sign-off before it publishes. See our editorial policy for the full rules.",
   },
   {
-    q: "Can I listen to an article instead of reading it?",
-    a: "Yes. Every article has a \"Listen\" button at the top of the story and another above \"Our take,\" so you can hear just the summary and opinion, or the whole thing.",
-  },
-  {
-    q: "Why do some articles show pixel art instead of a photo?",
-    a: "When a story's source doesn't provide its own image, DigitalDramaa falls back to a small generated image, or a unique 7×7 pixel-art icon generated from that article's take, instead of a stock photo.",
+    q: "Why do articles show pixel art instead of a photo?",
+    a: "DigitalDramaa doesn't hotlink images from other publishers — when a story has a source image, a copy is downloaded and served from our own storage instead of linking directly to their CDN. Where a story has no image at all, a unique 7×7 pixel-art icon is generated instead.",
   },
   {
     q: "How is DigitalDramaa organized by topic?",
-    a: "Every article is tagged (e.g. gaming drama, influencer drama, data breach), and each tag has its own page so you can follow one topic without scrolling the full archive.",
+    a: "Both the Archive and Commentary are tagged (e.g. gaming drama, influencer drama, data breach), and each tag has its own page so you can follow one topic without scrolling the full archive.",
   },
   {
     q: "Does DigitalDramaa ever get things wrong?",
-    a: "It can — this is AI-rewritten commentary on fast-moving stories, not verified original reporting. That's exactly why every article links back to its source: treat DigitalDramaa as a fast summary and a take, not the final word.",
+    a: "The Archive can — it's an automated tracker of fast-moving stories, not verified reporting, which is exactly why every entry links back to its source instead of standing in for it. Commentary posts go through human review specifically to catch this before publishing; if one still gets something wrong, see our editorial policy for how to request a correction.",
   },
   {
     q: "Is DigitalDramaa free to read?",
@@ -177,13 +173,13 @@ const faqs = [
   <section class="seo-intro">
     <h2>What Is DigitalDramaa?</h2>
     <p>
-      DigitalDramaa is an internet drama and gaming drama news site that tracks the
-      web's messiest stories as they break — leaks, callouts, platform bans, data
+      DigitalDramaa is an internet drama and gaming drama news site built around
+      two clearly separate parts: an hourly Archive that tracks the web's
+      messiest stories as they break — leaks, callouts, platform bans, data
       breaches, and the influencer drama and streamer controversy stories that
-      dominate timelines for a day and then vanish. Instead of waiting for a slow
-      news cycle, DigitalDramaa pulls from a wide net of gaming, tech, and
-      internet-culture sources, rewrites each story in plain language, and adds a
-      distinct take within the hour.
+      dominate timelines for a day and then vanish — and a Commentary section
+      of original, human-written and human-reviewed analysis. The Archive
+      finds things fast; Commentary is where DigitalDramaa actually publishes.
     </p>
 
     <h3>Why Internet Drama Moves Faster Than Traditional News</h3>
@@ -191,9 +187,10 @@ const faqs = [
       A YouTube drama story or Twitch drama callout can go from a single clip to a
       full-blown cancel culture news cycle in a matter of hours. By the time a
       traditional outlet publishes a full write-up, the discourse has often
-      already moved on. DigitalDramaa exists to close that gap — surfacing gaming
+      already moved on. The Archive exists to close that gap — surfacing gaming
       leak news, platform ban news, and tech scandal coverage while it's still
-      actually happening, not after the conversation has cooled off.
+      actually happening, each entry linking straight to the original source
+      rather than trying to retell it.
     </p>
 
     <h3>What DigitalDramaa Actually Covers</h3>
@@ -228,27 +225,28 @@ const faqs = [
 
     <h3>Commentary, Not Just a Copy-Paste</h3>
     <p>
-      What separates DigitalDramaa from a plain RSS aggregator is the "Our take"
-      section attached to every story. Rather than just restating what a source
-      reported, DigitalDramaa adds a short, opinionated read on why a piece of
-      internet drama actually matters — sharper commentary than a wire report, but
-      clearly labeled as commentary rather than original reporting. Every article
-      links straight back to the original source, so nothing here is meant to
-      replace it — just to help you catch up faster and decide if it's worth
-      digging into the full story yourself.
+      What separates DigitalDramaa from a plain RSS aggregator is the
+      <a href="/commentary">Commentary</a> section. Rather than just restating
+      what a source reported, Commentary posts add real context, history, and
+      analysis on why a piece of internet drama actually matters — written and
+      reviewed by a human editor, with sources cited rather than folded in
+      unattributed. Nothing in Commentary is meant to replace the original
+      reporting it draws on; it's meant to add something the source article
+      didn't already say.
     </p>
 
     <h3>Built to Move at Internet Speed</h3>
     <p>
-      New DigitalDramaa articles publish automatically, refreshed hourly, pulling
-      from gaming, tech, and internet-culture feeds continuously through the day.
-      That means the platform ban news, tech scandal, or gaming drama story
-      you're searching for is more likely to already be here — summarized,
-      tagged, and ready — rather than buried three scrolls deep on a publication
-      that only posts twice a day. If you're trying to figure out why a hashtag
-      is trending, why a streamer got banned, or what a leak actually revealed,
-      DigitalDramaa is built to answer that in under two minutes, with links back
-      to the original source for anyone who wants the full picture.
+      The Archive refreshes hourly, pulling from gaming, tech, and
+      internet-culture feeds continuously through the day. That means the
+      platform ban news, tech scandal, or gaming drama story you're searching
+      for is more likely to already be tracked here — tagged and linked to its
+      source — rather than buried three scrolls deep on a publication that only
+      posts twice a day. If you're trying to figure out why a hashtag is
+      trending, why a streamer got banned, or what a leak actually revealed,
+      the Archive is built to point you there in seconds, and Commentary is
+      where the story gets an actual second look once there's something worth
+      saying about it.
     </p>
 
     <h3>Who DigitalDramaa Is For</h3>
